@@ -1,8 +1,19 @@
-To do initial config, run:
+# Initial Config
 
 ```
 VM_IP=161.35.192.168
-ssh root@${VM IP} "bash -s" < ./install.sh $ADMIN_EMAIL
+ssh root@${VM_IP} "bash -s" < ./init_install.sh
 ```
 
-This script isn't idempotent so can't run it multiple times. Certbot auto-updates the server block, so replacing that after the first script run breaks everything
+# Setting up projects
+
+Copy SSH key (needs to be imported to Github too)
+
+```
+scp id_ecdsa* root@${VM_IP}:~/.ssh/
+```
+
+Setup projects
+```
+ssh root@${VM_IP} "bash -s" < ./project_setup.sh $ADMIN_EMAIL
+```
