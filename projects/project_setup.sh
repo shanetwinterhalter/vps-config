@@ -17,7 +17,7 @@ fi
 if [ ! -d "~/${REPO_NAME}" ]
 then
     echo "Repository doesn't exist, downloading it"
-    git clone -–depth 1 git@github.com:shanetwinterhalter/${REPO_NAME}.git
+    git clone --depth 1 git@github.com:shanetwinterhalter/${REPO_NAME}.git
     cd ${REPO_NAME}
 else
     echo "Repository exists, updating it"

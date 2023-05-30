@@ -16,17 +16,19 @@ scp ssh_files/* root@${VM_IP}:~/.ssh/
 ```
 4. Clone this repo on the VPS
 ```
-ssh root@${VM_IP} "bash -s" < git clone git@github.com:shanetwinterhalter/hosting_infrastructure.git
+ssh root@${VM_IP} "git clone git@github.com:shanetwinterhalter/hosting_infrastructure.git"
 ```
 5. Run the initial setup script
 ```
-ssh root@${VM_IP} "bash -s" < ./hosting_infrastructure/initial_setup/init_install.sh
+ssh root@${VM_IP} "chmod -R 755 hosting_infrastructure"
+ssh root@${VM_IP} "./hosting_infrastructure/initial_setup/init_install.sh"
 ```
 
 ## VPS configure/update projects
 
 ```
-ssh root@${VM_IP} "bash -s" < ./hosting_infrastructure/projects/project_setup.sh
+ssh root@${VM_IP}" "./hosting_infrastructure/projects/project_setup.sh test"
 ```
+Note: Remove the "test" string to run on production server
 
 This should handle initial setup and can be re-run to incorporate changes. Each time it is run, each systemd service is restarted and nginx is reloaded, so it may cause a short downtime.
