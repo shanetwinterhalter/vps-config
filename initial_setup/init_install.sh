@@ -10,7 +10,7 @@ apt update -y
 apt install -y nginx
 
 # Install other packages
-apt install -y python3-pip python3-dev build-essential libssl-dev libffi-dev python3-setuptools python3-venv
+apt install -y python3-pip python3-dev build-essential libssl-dev libffi-dev python3-setuptools python3.10-venv
 
 # Open firewall
 echo "Configure firewall"
