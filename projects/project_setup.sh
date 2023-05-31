@@ -54,14 +54,16 @@ do
   pip install -r requirements.txt
 done
 
+cd ~/hosting_infrastructure
+
 # Copy nginx server block files
 echo "Updating nginx server block config"
-NGINX_FILES="./projects/nginx_files/*"
+NGINX_FILES=./projects/nginx_files/*
 cp $NGINX_FILES /etc/nginx/sites-available/
 
 # Copy systemd service files
 echo "Updating systemd service files"
-SYSTEMD_FILES="./projects/systemd_files/*"
+SYSTEMD_FILES=./projects/systemd_files/*
 cp $SYSTEMD_FILES /etc/systemd/system/
 
 # Create symlink for each server block
@@ -79,8 +81,9 @@ done
 echo "Starting systemd services"
 for j in $SYSTEMD_FILES
 do
-  systemctl enable ${j}
-  systemctl restart ${j}
+  SERVICE_NAME=$(echo ${j} | xargs -n 1 basename)
+  systemctl enable ${SERVICE_NAME}
+  systemctl restart ${SERVICE_NAME}
 done
 
 # Get certs if don't already exist
