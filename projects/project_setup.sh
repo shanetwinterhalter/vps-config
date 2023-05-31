@@ -93,6 +93,10 @@ DOMAIN_STRING=""
 for k in $DOMAINS
 do
     DOMAIN_STRING="${DOMAIN_STRING} -d ${k}"
+    if [ $1="test" ]
+    then
+      DOMAIN_STRING="${DOMAIN_STRING} --test-cert"
+    fi
 done
 certbot --nginx -n ${DOMAIN_STRING} --non-interactive --agree-tos --register-unsafely-without-email
 
