@@ -70,10 +70,11 @@ cp $SYSTEMD_FILES /etc/systemd/system/
 echo "Create nginx symlinks"
 for f in $NGINX_FILES
 do
+  FILE_NAME=$(echo ${f} | xargs -n 1 basename)
   # Create symlink if it doesn't exist
   if [ ! -L /etc/nginx/sites-enabled/${f} ]
   then
-    ln -s /etc/nginx/sites-available/${f} /etc/nginx/sites-enabled/
+    ln -s /etc/nginx/sites-available/${FILE_NAME} /etc/nginx/sites-enabled/
   fi
 done
 

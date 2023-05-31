@@ -11,6 +11,7 @@ VM_IP=161.35.192.168 # Replace this with the IP
 ## VPS configure/update projects
 
 ```
+ssh root@${VM_IP} "chmod +x ./hosting_infrastructure/projects/project_setup.sh"
 ssh root@${VM_IP} "./hosting_infrastructure/projects/project_setup.sh test"
 ```
 Note: Remove the "test" string to run on production server
