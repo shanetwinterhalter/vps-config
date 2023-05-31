@@ -1,6 +1,7 @@
 #!/bin/bash
 
-REPO_NAME="shanewinterhalter.com"
+# Must match Github name
+PROJECT_NAME="shanewinterhalter.com"
 VENV_NAME="venv"
 
 # Set domain names for certs
@@ -13,34 +14,38 @@ else
   DOMAINS=("shanew.co.uk" "www.shanew.co.uk")
 fi
 
-# Check if repo already exists
-if [ ! -d "~/${REPO_NAME}" ]
-then
-    echo "Repository doesn't exist, downloading it"
-    git clone --depth 1 git@github.com:shanetwinterhalter/${REPO_NAME}.git
-    cd ${REPO_NAME}
-else
-    echo "Repository exists, updating it"
-    cd ${REPO_NAME}
-    git fetch --depth 1
-fi
+# For each project
+for i in PROJECT_NAME
+do
+  # Check if repo already exists
+  if [ ! -d "~/${REPO_NAME}" ]
+  then
+      echo "Repository doesn't exist, downloading it"
+      git clone --depth 1 git@github.com:shanetwinterhalter/${REPO_NAME}.git
+      cd ${REPO_NAME}
+  else
+      echo "Repository exists, updating it"
+      cd ${REPO_NAME}
+      git fetch --depth 1
+  fi
 
-# Assume from here current dir is repo directory
+  # Assume from here current dir is repo directory
 
-# Only create venv if it doesn't exist
-if [ ! -d "~/${REPO_NAME}/${VENV_NAME}" ]
-then
-    python3 -m venv ${VENV_NAME}
-fi
-# Activate venv
-cd ~
-source ${VENV_NAME}/bin/activate
+  # Only create venv if it doesn't exist
+  if [ ! -d "~/${REPO_NAME}/${VENV_NAME}" ]
+  then
+      python3 -m venv ${VENV_NAME}
+  fi
+  # Activate venv
+  cd ~
+  source ${VENV_NAME}/bin/activate
 
-# Update pip packages
-echo "Installing requirements"
-pip install pip --upgrade
-pip install wheel
-pip install -r requirements.txt
+  # Update pip packages
+  echo "Installing requirements"
+  pip install pip --upgrade
+  pip install wheel
+  pip install -r requirements.txt
+done
 
 # Copy nginx server block files
 echo "Updating nginx server block config"
