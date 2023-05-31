@@ -8,6 +8,7 @@ VENV_NAME="venv"
 echo "Updating hosting infrastructure repository"
 cd hosting_infrastructure
 git fetch --depth 1
+git reset origin/main --hard
 cd ~
 
 # Set domain names for certs
@@ -33,6 +34,7 @@ do
       echo "Repository exists, updating it"
       cd ${i}
       git fetch --depth 1
+      git reset origin/main --hard
   fi
 
   # Assume from here current dir is repo directory
