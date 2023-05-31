@@ -42,9 +42,11 @@ do
   # Only create venv if it doesn't exist
   if [ ! -d ~/${i}/${VENV_NAME} ]
   then
+      echo "Creating venv"
       python3 -m venv ${VENV_NAME}
   fi
   # Activate venv
+  echo "Activating venv"
   source ${VENV_NAME}/bin/activate
 
   # Update pip packages
