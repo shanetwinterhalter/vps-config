@@ -18,3 +18,5 @@ ssh root@${VM_IP} "./hosting_infrastructure/projects/project_setup.sh test"
 Note: Remove the "test" string to run on production server
 
 This should handle initial setup and can be re-run to incorporate changes. Each time it is run, each systemd service is restarted and nginx is reloaded, so it may cause a short downtime.
+
+There might be an issue with the nginx configuration files. certbot overwrites part of the files so if I want to modify an existing file, I need another way to do it.
