@@ -4,6 +4,11 @@
 PROJECT_NAME="shanewinterhalter.com"
 VENV_NAME="venv"
 
+# Make sure hosting infra repo is up to date
+echo "Updating hosting infrastructure repository"
+cd hosting_infrastructure
+git fetch --depth 1
+
 # Set domain names for certs
 if [ $1 = "test" ]
 then
@@ -15,24 +20,26 @@ else
 fi
 
 # For each project
-for i in PROJECT_NAME
+echo ${PROJECT_NAME}
+for i in $PROJECT_NAME
 do
-  # Check if repo already exists
-  if [ ! -d "~/${REPO_NAME}" ]
+  echo "${i}"
+  # Check if f already exists
+  if [ ! -d "~/${i}" ]
   then
       echo "Repository doesn't exist, downloading it"
-      git clone --depth 1 git@github.com:shanetwinterhalter/${REPO_NAME}.git
-      cd ${REPO_NAME}
+      git clone --depth 1 git@github.com:shanetwinterhalter/${i}.git
+      cd ${i}
   else
       echo "Repository exists, updating it"
-      cd ${REPO_NAME}
+      cd ${i}
       git fetch --depth 1
   fi
 
   # Assume from here current dir is repo directory
 
   # Only create venv if it doesn't exist
-  if [ ! -d "~/${REPO_NAME}/${VENV_NAME}" ]
+  if [ ! -d "~/${i}/${VENV_NAME}" ]
   then
       python3 -m venv ${VENV_NAME}
   fi
