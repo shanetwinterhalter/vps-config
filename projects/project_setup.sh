@@ -94,7 +94,7 @@ for k in $DOMAINS
 do
     DOMAIN_STRING="${DOMAIN_STRING} -d ${k}"
 done
-certbot --nginx -n ${DOMAIN_STRING} --non-interactive --test-cert --agree-tos --register-unsafely-without-email
+certbot --nginx -n ${DOMAIN_STRING} --non-interactive --agree-tos --register-unsafely-without-email
 
 # Finally reload nginx
 echo "Reloading nginx"
