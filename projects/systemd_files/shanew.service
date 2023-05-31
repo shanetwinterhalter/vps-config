@@ -6,8 +6,8 @@ After=network.target
 User=root
 Group=www-data
 WorkingDirectory=/root/shanewinterhalter.com
-Environment="PATH=/root/shanewinterhalter.com/shanewenv/bin"
-ExecStart=/root/shanewinterhalter.com/shanew_env/bin/gunicorn --bind 127.0.0.1:5010 app:app
+Environment="PATH=/root/shanewinterhalter.com/venv/bin"
+ExecStart=/root/shanewinterhalter.com/venv/bin/gunicorn --bind 127.0.0.1:5010 app:app
 
 [Install]
 WantedBy=multi-user.target

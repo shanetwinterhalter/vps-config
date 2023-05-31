@@ -72,7 +72,7 @@ for f in $NGINX_FILES
 do
   FILE_NAME=$(echo ${f} | xargs -n 1 basename)
   # Create symlink if it doesn't exist
-  if [ ! -L /etc/nginx/sites-enabled/${f} ]
+  if [ ! -L /etc/nginx/sites-enabled/${FILE_NAME} ]
   then
     ln -s /etc/nginx/sites-available/${FILE_NAME} /etc/nginx/sites-enabled/
   fi
