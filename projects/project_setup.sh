@@ -12,7 +12,7 @@ git reset origin/main --hard
 cd ~
 
 # Set domain names for certs
-if [ $1="test" ]
+if [ "${1}" == "test" ]
 then
   echo "Setting up test server"
   DOMAINS="test.shanew.co.uk www.test.shanew.co.uk"
@@ -93,7 +93,7 @@ DOMAIN_STRING=""
 for k in $DOMAINS
 do
     DOMAIN_STRING="${DOMAIN_STRING} -d ${k}"
-    if [ $1="test" ]
+    if [ "${1}" == "test" ]
     then
       DOMAIN_STRING="${DOMAIN_STRING} --test-cert"
     fi
