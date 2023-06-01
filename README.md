@@ -19,3 +19,15 @@ Note: Remove the "test" string to run on production server
 This should handle initial setup and can be re-run to incorporate changes. Each time it is run, each systemd service is restarted and nginx is reloaded, so it may cause a short downtime.
 
 There might be an issue with the nginx configuration files. certbot overwrites part of the files so if I want to modify an existing file, I need another way to do it.
+
+## Running Ansible
+
+To run on dev:
+```
+ansible-playbook -u root -i inventory setup.yaml
+```
+
+And to run on prod:
+```
+ansible-playbook -u root -i inventory setup.yaml --extra-vars "env=prod"
+```

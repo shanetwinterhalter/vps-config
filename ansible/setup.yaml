@@ -1,0 +1,35 @@
+- name: My first play
+  hosts: "{{ env | default('dev') }}"
+  tasks:
+
+    - name: Install packages
+      ansible.builtin.apt:
+        pkg:
+          - nginx
+          - python3-pip
+          - python3-dev
+          - build-essential
+          - libssl-dev
+          - libffi-dev
+          - python3-setuptools
+          - python3.10-venv
+
+    - name: Configure UFW to allow SSH
+      community.general.ufw:
+        state: enabled
+        default: allow
+        name: OpenSSH
+
+    - name: Configure UFW to allow HTTP
+      community.general.ufw:
+        state: enabled
+        default: allow
+        name: 'Nginx Full'
+
+    - name: Copy over SSH keys for github auth
+      ansible.builtin.copy:
+        src: ../ssh_files/
+        dest: ~/.ssh/
+        owner: root
+        group: root
+        mode: '0644'
