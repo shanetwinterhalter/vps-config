@@ -3,7 +3,7 @@ import hashlib
 import subprocess
 import json
 import threading
-from flask import Flask, request, jsonify
+from flask import Flask, abort, request, jsonify
 
 app = Flask(__name__)
 
@@ -35,7 +35,8 @@ def verify_signature(payload_body, signature_header):
     if not signature_header:
         abort(403, description="x-hub-signature-256 header is missing!")
 
-    hash_object = hmac.new(GITHUB_WEBHOOK_SECRET.encode('utf-8'), msg=payload_body, digestmod=hashlib.sha256)
+    hash_object = hmac.new(GITHUB_WEBHOOK_SECRET.encode('utf-8'),
+                           msg=payload_body, digestmod=hashlib.sha256)
     expected_signature = "sha256=" + hash_object.hexdigest()
 
     if not hmac.compare_digest(expected_signature, signature_header):
