@@ -20,16 +20,20 @@ playbook_running = False
 def run_ansible_playbook():
     global playbook_running
     try:
-        subprocess.run(
+        completed_process = subprocess.run(
             [
                 "/srv/hosting_infrastructure/venv/bin/ansible-playbook",
                 "--connection", "local",
                 "-u", "root",
                 "-i", "/srv/hosting_infrastructure/ansible/inventory.yaml",
                 "/srv/hosting_infrastructure/ansible/setup.yaml"
-            ], check=True)
+            ], check=True, capture_output=True, text=True)
+
+        # Log the output
+        app.logger.info(completed_process.stdout)
+        app.logger.error(completed_process.stderr)
     except subprocess.CalledProcessError as e:
-        print(f'Error running Ansible playbook: {str(e)}')
+        app.logger.error(f'Error running Ansible playbook: {str(e)}')
     finally:
         playbook_running = False
 
