@@ -24,11 +24,13 @@ Then add it to the Ansible inventory file
 
 To run on dev:
 ```
+cd ansible
 ansible-playbook -u root -i inventory.yaml setup.yaml
 ```
 
 And to run on prod:
 ```
+cd ansible
 ansible-playbook -u root -i inventory.yaml setup.yaml --extra-vars "env=prod"
 ```
 
