@@ -5,6 +5,14 @@ import json
 import logging
 import sys
 from flask import Flask, abort, request, jsonify
+from flask.logging import default_handler
+
+app = Flask(__name__)
+app.logger.removeHandler(default_handler)
+app.logger.addHandler(logging.StreamHandler(sys.stdout))
+app.logger.setLevel(logging.INFO)
+app.logger.info("Starting Github listener")
+
 
 app = Flask(__name__)
 app.logger.addHandler(logging.StreamHandler(sys.stdout))
