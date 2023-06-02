@@ -7,6 +7,7 @@ all:
         acme_directory: https://acme-staging.api.letsencrypt.org/directory
         domain_names: 
           - test.shanew.co.uk
+          - www.test.shanew.co.uk
         projects:
           - hosting_infrastructure
           - shanewinterhalter.com
@@ -17,6 +18,7 @@ all:
         acme_directory: https://acme-v02.api.letsencrypt.org/directory
         domain_names: 
           - shanew.co.uk
+          - www.shanew.co.uk
         projects:
           - hosting_infrastructure
           - shanewinterhalter.com

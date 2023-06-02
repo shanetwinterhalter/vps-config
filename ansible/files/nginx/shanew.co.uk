@@ -1,5 +1,5 @@
 server {
-    server_name shanew.co.uk www.shanew.co.uk;
+    server_name {{ domain_names | join(' ') }};
 
     location / {
         include proxy_params;

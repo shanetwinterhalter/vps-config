@@ -1,5 +1,7 @@
 - name: My first play
   hosts: "{{ env | default('dev') }}"
+  vars:
+    install_dir: /srv
   tasks:
 
     - name: Print apt output
@@ -16,7 +18,7 @@
           - libssl-dev
           - libffi-dev
           - python3-setuptools
-          - python3.10-venv
+          - python3-virtualenv
       register: result
       retries: 5
       delay: 30
@@ -42,9 +44,69 @@
         group: root
         mode: '0700'
 
+    # Project configuration
     - name: Clone all the project Github repos
       ansible.builtin.git:
         repo: "git@github.com:shanetwinterhalter/{{ item }}.git"
-        dest: "~/{{ item }}"
+        dest: "{{ install_dir }}/{{ item }}"
         depth: 1
       loop: "{{ projects }}"
+
+    - name: Create venv for each project & install pip packages
+      ansible.builtin.pip:
+        requirements: "{{ install_dir }}/{{ item }}/requirements.txt"
+        virtualenv: "{{ install_dir }}/{{ item }}/venv"
+        virtualenv_command: virtualenv
+      loop: "{{ projects }}"
+
+
+    # Configure systemd services
+    - name: Copy over Systemd files
+      ansible.builtin.template:
+        src: "{{ item }}"
+        dest: "/etc/systemd/system/{{ item | basename }}"
+        owner: root
+        group: root
+        mode: '0755'
+      register: symlink_files
+      with_fileglob:
+        - ./files/systemd/*
+
+    - name: Configure services
+      ansible.builtin.systemd:
+        state: restarted
+        daemon_reload: true
+        enabled: true
+        name: "{{ item | basename }}"
+      with_fileglob:
+        - ./files/systemd/*
+
+    # nginx configuration
+    - name: Copy over Nginx files
+      ansible.builtin.template:
+        src: "{{ item }}"
+        dest: "/etc/nginx/sites-available/{{ item | basename }}"
+        owner: root
+        group: root
+        mode: '0755'
+      with_fileglob:
+        - ./files/nginx/*
+
+    - name: Create symlink to make nginx server blocks available
+      ansible.builtin.file:
+        src: "/etc/nginx/sites-available/{{ item | basename }}"
+        dest: "/etc/nginx/sites-enabled/{{ item | basename }}"
+        owner: root
+        group: root
+        state: link
+      with_fileglob:
+        - ./files/nginx/*
+
+    # Configure certificates
+
+    # Reload nginx
+    - name: Configure services
+      ansible.builtin.systemd:
+        state: reloaded
+        enabled: true
+        name: nginx

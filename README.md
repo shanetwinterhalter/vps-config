@@ -13,6 +13,13 @@ doctl compute droplet create \
     vps-test
 ```
 
+Get the IP after the VM is created:
+```
+doctl compute droplet list
+```
+
+Then add it to the Ansible inventory file
+
 ## Running Ansible
 
 To run on dev:

@@ -1,0 +1,13 @@
+[Unit]
+Description=Gunicorn instance to serve shanew website
+After=network.target
+
+[Service]
+User=root
+Group=www-data
+WorkingDirectory={{ install_dir }}/shanewinterhalter.com
+Environment="PATH={{ install_dir }}/shanewinterhalter.com/venv/bin"
+ExecStart={{ install_dir }}/shanewinterhalter.com/venv/bin/gunicorn --bind 127.0.0.1:5010 app:app
+
+[Install]
+WantedBy=multi-user.target
