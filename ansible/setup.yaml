@@ -55,6 +55,7 @@
         repo: "git@github.com:shanetwinterhalter/{{ item }}.git"
         dest: "{{ install_dir }}/{{ item }}"
         depth: 1
+        force: true
       loop: "{{ projects }}"
 
     - name: Create venv for each project & install pip packages
