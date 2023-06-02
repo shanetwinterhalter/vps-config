@@ -3,9 +3,13 @@ import hashlib
 import subprocess
 import json
 import threading
+import logging
+import sys
 from flask import Flask, abort, request, jsonify
 
 app = Flask(__name__)
+app.logger.addHandler(logging.StreamHandler(sys.stdout))
+app.logger.setLevel(logging.INFO)
 
 GITHUB_WEBHOOK_SECRET = 'kybR%*DK4W4hGm'
 
