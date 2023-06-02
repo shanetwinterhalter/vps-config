@@ -8,6 +8,7 @@ Group=www-data
 WorkingDirectory={{ install_dir }}/shanewinterhalter.com
 Environment="PATH={{ install_dir }}/shanewinterhalter.com/venv/bin"
 ExecStart={{ install_dir }}/shanewinterhalter.com/venv/bin/gunicorn --bind 127.0.0.1:5010 app:app
+Restart=always
 
 [Install]
 WantedBy=multi-user.target

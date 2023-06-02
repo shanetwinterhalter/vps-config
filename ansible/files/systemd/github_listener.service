@@ -1,0 +1,14 @@
+[Unit]
+Description=Gunicorn instance to listen for github webhooks
+After=network.target
+
+[Service]
+User=root
+Group=www-data
+WorkingDirectory={{ install_dir }}/hosting_infrastructure/webhook_listener
+Environment="PATH={{ install_dir }}/hosting_infrastructure/venv/bin"
+ExecStart={{ install_dir }}/hosting_infrastructure/venv/bin/gunicorn --bind 127.0.0.1:5009 app:app
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -1,6 +1,11 @@
 server {
     server_name {{ domain_names | join(' ') }};
 
+    location /github {
+        include proxy_params;
+        proxy_pass http://127.0.0.1:5009
+    }
+
     location / {
         include proxy_params;
         proxy_pass http://127.0.0.1:5010;
