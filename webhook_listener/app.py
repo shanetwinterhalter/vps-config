@@ -1,9 +1,9 @@
 import hmac
 import hashlib
 import subprocess
-import json
 import logging
 import sys
+import threading
 from flask import Flask, abort, request, jsonify
 from flask.logging import default_handler
 
@@ -29,14 +29,7 @@ def verify_signature(payload_body, signature_header):
         abort(403, description="Request signatures didn't match!")
 
 
-@app.route('/github', methods=["POST"])
-def gh_webhook_listener():
-    # Verify GitHub signature
-    verify_signature(request.data, request.headers.get('X-Hub-Signature-256'))
-
-    # Parse the incoming payload from GitHub
-    # data = json.loads(request.data)
-
+def run_ansible_playbook():
     completed_process = subprocess.run(
         ["/srv/hosting_infrastructure/venv/bin/ansible-playbook",
          "-c=local", "-u", "root", "-i",
@@ -47,6 +40,16 @@ def gh_webhook_listener():
     # Log the output
     app.logger.info(completed_process.stdout)
     app.logger.error(completed_process.stderr)
+
+
+@app.route('/github', methods=["POST"])
+def gh_webhook_listener():
+    # Verify GitHub signature
+    verify_signature(request.data, request.headers.get('X-Hub-Signature-256'))
+
+    # Start ansible-playbook in a separate thread
+    threading.Thread(target=run_ansible_playbook).start()
+
     return jsonify(
         {'message': 'Webhook received, running process'}), 200
 
