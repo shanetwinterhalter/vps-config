@@ -2,6 +2,7 @@ all:
   children:
     dev:
       hosts:
+        64.226.112.174:
       vars:
         acme_directory: https://acme-staging.api.letsencrypt.org/directory
         domain_names: 

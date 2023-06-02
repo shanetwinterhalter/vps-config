@@ -2,6 +2,10 @@
   hosts: "{{ env | default('dev') }}"
   tasks:
 
+    - name: Print apt output
+      ansible.builtin.debug:
+        msg: "Print output"
+
     - name: Install packages
       ansible.builtin.apt:
         pkg:
@@ -13,6 +17,10 @@
           - libffi-dev
           - python3-setuptools
           - python3.10-venv
+      register: result
+      retries: 5
+      delay: 30
+      until: result.failed == false
 
     - name: Configure UFW to allow SSH
       community.general.ufw:
@@ -32,4 +40,11 @@
         dest: ~/.ssh/
         owner: root
         group: root
-        mode: '0644'
+        mode: '0700'
+
+    - name: Clone all the project Github repos
+      ansible.builtin.git:
+        repo: "git@github.com:shanetwinterhalter/{{ item }}.git"
+        dest: "~/{{ item }}"
+        depth: 1
+      loop: "{{ projects }}"
