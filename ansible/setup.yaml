@@ -2,6 +2,10 @@
   hosts: "{{ env | default('dev') }}"
   vars:
     install_dir: /srv
+    letsencrypt_keys_dir: /etc/letsencrypt/keys
+    letsencrypt_csrs_dir: /etc/letsencrypt/csrs
+    letsencrypt_certs_dir: /etc/letsencrypt/certs
+    letsencrypt_account_key: /etc/letsencrypt/account/account.key
   tasks:
 
     - name: Print apt output
@@ -43,6 +47,7 @@
         owner: root
         group: root
         mode: '0700'
+      when: "{{ ansible_connection != 'local' }}"
 
     # Project configuration
     - name: Clone all the project Github repos
@@ -58,7 +63,6 @@
         virtualenv: "{{ install_dir }}/{{ item }}/venv"
         virtualenv_command: virtualenv
       loop: "{{ projects }}"
-
 
     # Configure systemd services
     - name: Copy over Systemd files
@@ -103,6 +107,87 @@
         - ./files/nginx/*
 
     # Configure certificates
+    - name: "Create required directories in /etc/letsencrypt"
+      ansible.builtin.file:
+        path: "/etc/letsencrypt/{{ item }}"
+        state: directory
+        owner: root
+        group: root
+        mode: u=rwx,g=x,o=x
+      with_items:
+        - account
+        - certs
+        - csrs
+        - keys
+
+    # https://docs.ansible.com/ansible/2.9/modules/acme_certificate_module.html#acme-certificate-module
+    - name: Generate let's encrypt account key
+      community.crypto.openssl_privatekey:
+        path: "{{ letsencrypt_account_key }}"
+
+    # https://docs.ansible.com/ansible/latest/collections/community/crypto/openssl_privatekey_module.html#openssl-privatekey-module
+    - name: Generate let's encrypt private key with the default values (4096 bits, RSA)
+      community.crypto.openssl_privatekey:
+        path: "{{ letsencrypt_keys_dir }}/{{ domain_names[0] }}.key"
+
+    # https://docs.ansible.com/ansible/latest/collections/community/crypto/openssl_csr_module.html#openssl-csr-module
+    - name: Generate an OpenSSL Certificate Signing Request
+      community.crypto.openssl_csr:
+        path: "{{ letsencrypt_csrs_dir }}/{{ domain_names[0] }}.csr"
+        privatekey_path: "{{ letsencrypt_keys_dir }}/{{ domain_names[0] }}.key"
+        common_name: "{{ domain_names[0] }}"
+        subject_alt_name: "DNS:{{ domain_names[1:] | join(',DNS:') }}"
+
+    # Create letsencrypt challenge.
+    - name: Create a cert challenge using an account key file.
+      community.crypto.acme_certificate:
+        acme_directory: "{{ acme_directory }}"
+        acme_version: 2
+        terms_agreed: true
+        account_key_src: "{{ letsencrypt_account_key }}"
+        csr: "{{ letsencrypt_csrs_dir }}/{{ domain_names[0] }}.csr"
+        dest: "{{ letsencrypt_certs_dir }}/{{ domain_names[0] }}.crt"
+        remaining_days: 30
+      register: acme_challenge
+
+    - name: "Create required directories in /etc/letsencrypt"
+      ansible.builtin.file:
+        path: "/var/www/html/.well-known/acme-challenge/"
+        state: directory
+        owner: root
+        group: root
+        mode: u=rwx,g=rx,o=rx
+
+    - name: Copy http-01 challenges
+      ansible.builtin.copy:
+        dest: /var/www/html/{{ item.value['http-01']['resource'] }}
+        content: "{{ item.value['http-01']['resource_value'] }}"
+        owner: root
+        group: root
+        mode: u=rwx,g=rx,o=rx
+      loop: "{{ acme_challenge.challenge_data | dict2items }}"
+      when: acme_challenge is changed
+
+    # Execute letsencrypt challenge. Will fail first time unless DNS challenge data added to domain
+    - name: Let the challenge be validated and retrieve the cert and intermediate certificate
+      community.crypto.acme_certificate:
+        account_key_src: "{{ letsencrypt_account_key }}"
+        csr: "{{ letsencrypt_csrs_dir }}/{{ domain_names[0] }}.csr"
+        cert: "{{ letsencrypt_certs_dir }}/{{ domain_names[0] }}.crt"
+        acme_directory: "{{ acme_directory }}"
+        acme_version: 2
+        fullchain: "{{ letsencrypt_certs_dir }}/{{ domain_names[0] }}-fullchain.crt"
+        chain: "{{ letsencrypt_certs_dir }}/{{ domain_names[0] }}-intermediate.crt"
+        remaining_days: 30
+        data: "{{ acme_challenge }}"
+      when: acme_challenge is changed
+
+    - name: Setup cron job to auto-run this playbook once a week (for cert rotation)
+      ansible.builtin.cron:
+        name: "run setup playbook"
+        state: present
+        job: "/srv/hosting_infrastructure/venv/bin/ansible-playbook --connection=local -u root -e "remote_config" -i /srv/hosting_infrastructure/ansible/inventory.yaml /srv/hosting_infrastructure/ansible/setup.yaml"
+        special_time: "hourly"
 
     # Reload nginx
     - name: Configure services

@@ -6,6 +6,26 @@ server {
         proxy_pass http://127.0.0.1:5010;
     }
 
+    listen [::]:443 ssl ipv6only=on;
+    listen 443 ssl;
+    ssl_certificate /etc/letsencrypt/certs/{{ domain_names[0] }}.crt;
+    ssl_certificate_key /etc/letsencrypt/keys/{{ domain_names[0] }}.key;
+}
+server {
+    server_name {{ domain_names | join(' ') }};
+
+    location /.well-known/ {
+        default_type "text/plain";
+        root         /var/www/html;
+    }
+    location = /.well-known/ {
+        return 404;
+    }
+
+    location / {
+      return 301 https://$host$request_uri;
+    }
+
     listen 80;
     listen [::]:80;
 }

@@ -4,7 +4,7 @@ all:
       hosts:
         64.226.112.174:
       vars:
-        acme_directory: https://acme-staging.api.letsencrypt.org/directory
+        acme_directory: https://acme-staging-v02.api.letsencrypt.org/directory
         domain_names: 
           - test.shanew.co.uk
           - www.test.shanew.co.uk
