@@ -10,6 +10,7 @@ from flask import Flask, abort, request, jsonify
 app = Flask(__name__)
 app.logger.addHandler(logging.StreamHandler(sys.stdout))
 app.logger.setLevel(logging.INFO)
+app.logger.info("Starting Github listener")
 
 GITHUB_WEBHOOK_SECRET = 'kybR%*DK4W4hGm'
 
@@ -55,7 +56,8 @@ def verify_signature(payload_body, signature_header):
 def gh_webhook_listener():
     # Verify GitHub signature
     verify_signature(request.data, request.headers.get('X-Hub-Signature-256'))
-
+    app.logger.info("Webhook data received")
+    
     # Parse the incoming payload from GitHub
     data = json.loads(request.data)
 
