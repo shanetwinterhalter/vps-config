@@ -13,7 +13,7 @@ server {
 
     listen [::]:443 ssl ipv6only=on;
     listen 443 ssl;
-    ssl_certificate /etc/letsencrypt/certs/{{ domain_names[0] }}.crt;
+    ssl_certificate /etc/letsencrypt/certs/{{ domain_names[0] }}-fullchain.crt;
     ssl_certificate_key /etc/letsencrypt/keys/{{ domain_names[0] }}.key;
 }
 server {
