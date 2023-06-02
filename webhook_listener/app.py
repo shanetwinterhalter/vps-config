@@ -33,14 +33,13 @@ def verify_signature(payload_body, signature_header):
 def gh_webhook_listener():
     # Verify GitHub signature
     verify_signature(request.data, request.headers.get('X-Hub-Signature-256'))
-    app.logger.info("Webhook data received")
 
     # Parse the incoming payload from GitHub
-    data = json.loads(request.data)
+    # data = json.loads(request.data)
 
     completed_process = subprocess.run(
         ["/srv/hosting_infrastructure/venv/bin/ansible-playbook",
-         "--connection", "local", "-u", "root", "-i",
+         "-c=local", "-u", "root", "-i",
          "/srv/hosting_infrastructure/ansible/inventory.yaml",
          "/srv/hosting_infrastructure/ansible/setup.yaml"],
         check=True, capture_output=True, text=True)

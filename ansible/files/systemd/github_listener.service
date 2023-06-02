@@ -4,10 +4,8 @@ After=network.target
 
 [Service]
 User=root
-Group=www-data
-WorkingDirectory={{ install_dir }}/hosting_infrastructure/webhook_listener
-Environment="PATH={{ install_dir }}/hosting_infrastructure/venv/bin"
-ExecStart={{ install_dir }}/hosting_infrastructure/venv/bin/python app.py
+Group=root
+ExecStart={{ install_dir }}/hosting_infrastructure/venv/bin/python {{ install_dir }}/hosting_infrastructure/webhook_listener/app.py
 Restart=always
 
 [Install]
