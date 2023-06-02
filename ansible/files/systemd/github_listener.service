@@ -8,8 +8,6 @@ Group=www-data
 WorkingDirectory={{ install_dir }}/hosting_infrastructure/webhook_listener
 Environment="PATH={{ install_dir }}/hosting_infrastructure/venv/bin"
 ExecStart="{{ install_dir }}/hosting_infrastructure/venv/bin/python app.py"
-StandardOutput=journal
-StandardError=journal
 Restart=always
 
 [Install]
