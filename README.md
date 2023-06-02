@@ -45,3 +45,5 @@ ssh-keygen -R ${VM_IP}
 1. Add the Github project name to the Ansible variables file
 2. Add a systemd service file in `ansible/files/systemd`
 3. Modify an existing nginx config file or add a new one at `ansible/files/nginx`
+
+Test data
