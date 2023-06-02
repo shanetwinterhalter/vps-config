@@ -39,3 +39,9 @@ If have issue with SSL certificate ID, clear from known hosts file with
 VM_IP=64.226.112.174
 ssh-keygen -R ${VM_IP}
 ```
+
+## To setup a new project 
+
+1. Add the Github project name to the Ansible variables file
+2. Add a systemd service file in `ansible/files/systemd`
+3. Modify an existing nginx config file or add a new one at `ansible/files/nginx`
