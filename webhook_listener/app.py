@@ -13,12 +13,6 @@ app.logger.addHandler(logging.StreamHandler(sys.stdout))
 app.logger.setLevel(logging.INFO)
 app.logger.info("Starting Github listener")
 
-
-app = Flask(__name__)
-app.logger.addHandler(logging.StreamHandler(sys.stdout))
-app.logger.setLevel(logging.INFO)
-app.logger.info("Starting Github listener")
-
 GITHUB_WEBHOOK_SECRET = 'kybR%*DK4W4hGm'
 
 
