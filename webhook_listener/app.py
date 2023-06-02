@@ -52,21 +52,15 @@ def gh_webhook_listener():
     data = json.loads(request.data)
 
     # Check if the push was to the master branch
-    ref = data.get('ref')
-    if ref == "refs/heads/master":
-        global playbook_running
-        if playbook_running:
-            return jsonify(
-                {'message': 'Webhook received, process already running'}), 409
-        else:
-            playbook_running = True
-            threading.Thread(target=run_ansible_playbook).start()
-            return jsonify(
-                {'message': 'Webhook received, running process'}), 200
+    global playbook_running
+    if playbook_running:
+        return jsonify(
+            {'message': 'Webhook received, process already running'}), 409
     else:
-        # If the push was not to the master branch,
-        # return a response indicating so.
-        return jsonify({'message': 'Push was not to master branch'}), 400
+        playbook_running = True
+        threading.Thread(target=run_ansible_playbook).start()
+        return jsonify(
+            {'message': 'Webhook received, running process'}), 200
 
 
 if __name__ == '__main__':
