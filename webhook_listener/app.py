@@ -45,13 +45,11 @@ def gh_webhook_listener():
     data = json.loads(request.data)
 
     completed_process = subprocess.run(
-            [
-                "/srv/hosting_infrastructure/venv/bin/ansible-playbook",
-                "--connection", "local",
-                "-u", "root",
-                "-i", "/srv/hosting_infrastructure/ansible/inventory.yaml",
-                "/srv/hosting_infrastructure/ansible/setup.yaml"
-            ], check=True, capture_output=True, text=True)
+        ["/srv/hosting_infrastructure/venv/bin/ansible-playbook",
+         "--connection", "local", "-u", "root", "-i",
+         "/srv/hosting_infrastructure/ansible/inventory.yaml",
+         "/srv/hosting_infrastructure/ansible/setup.yaml"],
+        check=True, capture_output=True, text=True)
 
     # Log the output
     app.logger.info(completed_process.stdout)
