@@ -47,7 +47,7 @@
         owner: root
         group: root
         mode: '0700'
-      when: "{{ ansible_connection != 'local' }}"
+      when: ansible_connection != 'local'
 
     # Project configuration
     - name: Clone all the project Github repos

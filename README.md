@@ -1,7 +1,5 @@
 # hosting_infrastructure
 
-Note - at the moment SSL cert rotation isn't automatic! Need to set that up - likely just re-run the ansible playbook once a week as a cron job?
-
 ## Creating a new VPS
 
 ```
