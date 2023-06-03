@@ -35,7 +35,7 @@ def verify_signature(payload_body, signature_header):
 def run_ansible_playbook():
     try:
         # Navigate to the repository's directory
-        os.chdir(f"/{INSTALL_DIR}/hosting_infrastructure")
+        os.chdir(f"{INSTALL_DIR}/hosting_infrastructure")
 
         # Pull the latest changes from the GitHub repository
         pull_process = subprocess.run([
