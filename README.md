@@ -1,9 +1,5 @@
 # hosting_infrastructure
 
-## TO-DO:
-
-- Add where-to-meet and photo_studio projects
-
 ## Creating a new VPS
 
 ```
