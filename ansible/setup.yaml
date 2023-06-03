@@ -9,7 +9,7 @@
     letsencrypt_account_key: /etc/letsencrypt/account/account.key
   tasks:
 
-    - name: Print apt output
+    - name: Print output
       ansible.builtin.debug:
         msg: "Print output"
 
