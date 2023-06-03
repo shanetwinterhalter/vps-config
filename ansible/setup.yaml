@@ -188,7 +188,7 @@
         name: "run setup playbook"
         state: present
         job: "/srv/hosting_infrastructure/venv/bin/ansible-playbook --connection=local -u root -i /srv/hosting_infrastructure/ansible/inventory.yaml /srv/hosting_infrastructure/ansible/setup.yaml"
-        special_time: "hourly"
+        special_time: "weekly"
 
     # Reload nginx
     - name: Configure services
