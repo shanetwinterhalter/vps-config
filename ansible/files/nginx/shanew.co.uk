@@ -11,6 +11,16 @@ server {
         proxy_pass http://127.0.0.1:5010;
     }
 
+    location /photo_studio {
+        include proxy_params;
+        proxy_pass http://127.0.0.1:5011;
+    }
+
+    location /where_to_meet {
+        include proxy_params;
+        proxy_pass http://127.0.0.1:5012;
+    }
+
     listen [::]:443 ssl ipv6only=on;
     listen 443 ssl;
     ssl_certificate /etc/letsencrypt/certs/{{ domain_names[0] }}-fullchain.crt;

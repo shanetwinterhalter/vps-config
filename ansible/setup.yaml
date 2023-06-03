@@ -13,11 +13,6 @@
       ansible.builtin.debug:
         msg: "Print output"
 
-    - name: Create test file
-      ansible.builtin.file:
-        path: "{{ install_dir }}/test.txt"
-        state: touch
-
     - name: Install packages
       ansible.builtin.apt:
         pkg:
