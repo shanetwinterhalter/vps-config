@@ -7,7 +7,7 @@ User=root
 Group=root
 WorkingDirectory={{ install_dir }}/photo_studio/web
 EnvironmentFile=/srv/environment
-ExecStart={{ install_dir }}/photo_studio/venv/bin/gunicorn --bind 127.0.0.1:5011 app:app
+ExecStart={{ install_dir }}/photo_studio/venv/bin/gunicorn --timeout 600 --bind 127.0.0.1:5011 app:app
 Restart=always
 
 [Install]
