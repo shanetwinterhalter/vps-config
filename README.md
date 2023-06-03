@@ -52,5 +52,3 @@ ssh-keygen -R ${VM_IP}
 4. Push to github
 
 Note that environment/credential changes aren't stored in Github so that change needs to be made locally and the Ansible playbook run from the remote computer to apply it. 
-
-Test
