@@ -8,11 +8,6 @@ all:
         domain_names: 
           - test.shanew.co.uk
           - www.test.shanew.co.uk
-        projects:
-          - hosting_infrastructure
-          - shanewinterhalter.com
-          - where-to-meet
-          - photo_studio
     prod:
       hosts:
         138.68.86.82:
@@ -21,8 +16,3 @@ all:
         domain_names: 
           - shanew.co.uk
           - www.shanew.co.uk
-        projects:
-          - hosting_infrastructure
-          - shanewinterhalter.com
-          - where-to-meet
-          - photo_studio

@@ -5,9 +5,9 @@ After=network.target
 [Service]
 User=root
 Group=root
-WorkingDirectory={{ install_dir }}/where_to_meet/web
+WorkingDirectory={{ install_dir }}/where-to-meet/web
 EnvironmentFile=/srv/environment
-ExecStart={{ install_dir }}/where_to_meet/venv/bin/gunicorn --bind 127.0.0.1:5012 app:app
+ExecStart={{ install_dir }}/where-to-meet/venv/bin/gunicorn --bind 127.0.0.1:5012 app:app
 Restart=always
 
 [Install]
