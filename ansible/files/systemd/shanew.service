@@ -6,7 +6,7 @@ After=network.target
 User=root
 Group=www-data
 WorkingDirectory={{ install_dir }}/shanewinterhalter.com
-Environment="PATH={{ install_dir }}/shanewinterhalter.com/venv/bin"
+EnvironmentFile=/srv/environment
 ExecStart={{ install_dir }}/shanewinterhalter.com/venv/bin/gunicorn --bind 127.0.0.1:5010 app:app
 Restart=always
 

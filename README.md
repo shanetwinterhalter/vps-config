@@ -1,5 +1,11 @@
 # hosting_infrastructure
 
+## TO-DO:
+
+- Fix secret injection (no hardcoding)
+- Add environment variable to Ansible playbook when it's run - atm it's attempting to create test certs on prod
+- Add where-to-meet and photo_studio projects
+
 ## Creating a new VPS
 
 ```

@@ -3,6 +3,7 @@ import hashlib
 import subprocess
 import logging
 import sys
+import os
 import threading
 from flask import Flask, abort, request, jsonify
 from flask.logging import default_handler
@@ -13,8 +14,8 @@ app.logger.addHandler(logging.StreamHandler(sys.stdout))
 app.logger.setLevel(logging.INFO)
 app.logger.info("Starting Github listener")
 
-GITHUB_WEBHOOK_SECRET = 'kybR%*DK4W4hGm'
-
+GITHUB_WEBHOOK_SECRET = os.getenv('GITHUB_WEBHOOK_SECRET')
+ENVIRONMENT = os.getenv('ENVIRONMENT')
 
 def verify_signature(payload_body, signature_header):
     """Verify GitHub payload with the secret token."""
@@ -34,7 +35,8 @@ def run_ansible_playbook():
         ["/srv/hosting_infrastructure/venv/bin/ansible-playbook",
          "-c=local", "-u", "root", "-i",
          "/srv/hosting_infrastructure/ansible/inventory.yaml",
-         "/srv/hosting_infrastructure/ansible/setup.yaml"],
+         "/srv/hosting_infrastructure/ansible/setup.yaml",
+         "--extra-vars", f"env={ENVIRONMENT}"],
         check=True, capture_output=True, text=True)
 
     # Log the output
