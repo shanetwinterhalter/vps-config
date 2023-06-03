@@ -16,6 +16,8 @@ app.logger.info("Starting Github listener")
 
 GITHUB_WEBHOOK_SECRET = os.getenv('GITHUB_WEBHOOK_SECRET')
 ENVIRONMENT = os.getenv('ENVIRONMENT')
+INSTALL_DIR = os.getenv('INSTALL_DIR')
+
 
 def verify_signature(payload_body, signature_header):
     """Verify GitHub payload with the secret token."""
@@ -31,17 +33,38 @@ def verify_signature(payload_body, signature_header):
 
 
 def run_ansible_playbook():
-    completed_process = subprocess.run(
-        ["/srv/hosting_infrastructure/venv/bin/ansible-playbook",
-         "-c=local", "-u", "root", "-i",
-         "/srv/hosting_infrastructure/ansible/inventory.yaml",
-         "/srv/hosting_infrastructure/ansible/setup.yaml",
-         "--extra-vars", f"env={ENVIRONMENT}"],
-        check=True, capture_output=True, text=True)
+    try:
+        # Navigate to the repository's directory
+        os.chdir(f"/{INSTALL_DIR}/hosting_infrastructure")
 
-    # Log the output
-    app.logger.info(completed_process.stdout)
-    app.logger.error(completed_process.stderr)
+        # Pull the latest changes from the GitHub repository
+        pull_process = subprocess.run([
+            "git", "fetch", "--depth", "1", "origin", "master",
+            "&&", "git", "reset", "--hard", "FETCH_HEAD"],
+            check=True, capture_output=True, text=True)
+
+        # Log the output of the git pull
+        app.logger.info(pull_process.stdout)
+        app.logger.error(pull_process.stderr)
+
+        # Run the Ansible playbook
+        ansible_process = subprocess.run(
+            ["/srv/hosting_infrastructure/venv/bin/ansible-playbook",
+             "-c=local", "-u", "root", "-i",
+             "/srv/hosting_infrastructure/ansible/inventory.yaml",
+             "/srv/hosting_infrastructure/ansible/setup.yaml",
+             "--extra-vars", f"env={ENVIRONMENT}"],
+            check=True, capture_output=True, text=True)
+
+        # Log the output of the Ansible playbook
+        app.logger.info(ansible_process.stdout)
+        app.logger.error(ansible_process.stderr)
+    except subprocess.CalledProcessError as e:
+        # If a CalledProcessError is raised, it means that either git
+        # pull or ansible-playbook returned a non-zero exit status.
+        # Log the error message and return from the function.
+        app.logger.error(f'Error: {str(e)}')
+        return
 
 
 @app.route('/github', methods=["POST"])

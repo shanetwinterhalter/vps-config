@@ -11,6 +11,8 @@ all:
         projects:
           - hosting_infrastructure
           - shanewinterhalter.com
+          - where-to-meet
+          - photo_studio
     prod:
       hosts:
         138.68.86.82:
@@ -22,3 +24,5 @@ all:
         projects:
           - hosting_infrastructure
           - shanewinterhalter.com
+          - where-to-meet
+          - photo_studio
