@@ -1,7 +1,7 @@
 - name: My first play
   hosts: "{{ env | default('dev') }}"
   vars:
-    environment: "{{ env | default('dev') }}"
+    hosting_env: "{{ env | default('dev') }}"
     install_dir: /srv
     letsencrypt_keys_dir: /etc/letsencrypt/keys
     letsencrypt_csrs_dir: /etc/letsencrypt/csrs
