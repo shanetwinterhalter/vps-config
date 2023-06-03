@@ -9,6 +9,7 @@
     letsencrypt_account_key: /etc/letsencrypt/account/account.key
     cert_cn: "{{ domain_names[0] }}"
     cert_san: "DNS:{{ (domain_names[1:] + photo_studio_domain_names + where2meet_domain_names) | join(',DNS:') }}"
+    force_cert_update: "{{ cert_update | default('false') }}"
     projects:
       - hosting_infrastructure
       - shanewinterhalter.com
@@ -166,6 +167,7 @@
         csr: "{{ letsencrypt_csrs_dir }}/{{ cert_cn }}.csr"
         dest: "{{ letsencrypt_certs_dir }}/{{ cert_cn }}.crt"
         remaining_days: 30
+        force: "{{ force_cert_update }}"
       register: acme_challenge
 
     - name: "Create required directories in /etc/letsencrypt"
@@ -198,6 +200,7 @@
         chain: "{{ letsencrypt_certs_dir }}/{{ cert_cn }}-intermediate.crt"
         remaining_days: 30
         data: "{{ acme_challenge }}"
+        force: "{{ force_cert_update }}"
       when: acme_challenge is changed
 
     - name: Setup cron job to auto-run this playbook once a week (for cert rotation)

@@ -38,6 +38,11 @@ cd ansible
 ansible-playbook -u root -i inventory.yaml setup.yaml --extra-vars "env=prod"
 ```
 
+To force a certificate update (e.g. if there are new domain names), add:
+```
+--extra-vars "cert_update=true"
+```
+
 If have issue with SSL certificate ID, clear from known hosts file with
 ```
 VM_IP=64.226.112.174
