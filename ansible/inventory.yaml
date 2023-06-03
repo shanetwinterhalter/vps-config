@@ -8,6 +8,12 @@ all:
         domain_names: 
           - test.shanew.co.uk
           - www.test.shanew.co.uk
+        photo_studio_domain_names:
+          - photo-studio.test.shanew.co.uk
+          - www.photo-studio.test.shanew.co.uk
+        where2meet_domain_names:
+          - where-to-meet.test.shanew.co.uk
+          - www.where-to-meet.test.shanew.co.uk
     prod:
       hosts:
         138.68.86.82:
@@ -16,3 +22,9 @@ all:
         domain_names: 
           - shanew.co.uk
           - www.shanew.co.uk
+        photo_studio_domain_names:
+          - photo-studio.shanew.co.uk
+          - www.photo-studio.shanew.co.uk
+        where2meet_domain_names:
+          - where-to-meet.shanew.co.uk
+          - www.where-to-meet.shanew.co.uk

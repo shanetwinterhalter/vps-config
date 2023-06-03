@@ -1,14 +1,9 @@
 server {
-    server_name {{ domain_names | join(' ') }};
-
-    location /github {
-        include proxy_params;
-        proxy_pass http://127.0.0.1:5009;
-    }
+    server_name {{ where2meet_domain_names | join(' ') }};
 
     location / {
         include proxy_params;
-        proxy_pass http://127.0.0.1:5010;
+        proxy_pass http://127.0.0.1:5012;
     }
 
     listen [::]:443 ssl ipv6only=on;
@@ -17,7 +12,7 @@ server {
     ssl_certificate_key /etc/letsencrypt/keys/{{ domain_names[0] }}.key;
 }
 server {
-    server_name {{ domain_names | join(' ') }};
+    server_name {{ where2meet_domain_names | join(' ') }};
 
     location /.well-known/ {
         default_type "text/plain";

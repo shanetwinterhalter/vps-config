@@ -7,6 +7,8 @@
     letsencrypt_csrs_dir: /etc/letsencrypt/csrs
     letsencrypt_certs_dir: /etc/letsencrypt/certs
     letsencrypt_account_key: /etc/letsencrypt/account/account.key
+    cert_cn: "{{ domain_names[0] }}"
+    cert_san: "DNS:{{ domain_names[1:] + photo_studio_domain_names + where2meet_domain_names | join(',DNS:') }}"
     projects:
       - hosting_infrastructure
       - shanewinterhalter.com
@@ -144,15 +146,15 @@
     # https://docs.ansible.com/ansible/latest/collections/community/crypto/openssl_privatekey_module.html#openssl-privatekey-module
     - name: Generate let's encrypt private key with the default values (4096 bits, RSA)
       community.crypto.openssl_privatekey:
-        path: "{{ letsencrypt_keys_dir }}/{{ domain_names[0] }}.key"
+        path: "{{ letsencrypt_keys_dir }}/{{ cert_cn }}.key"
 
     # https://docs.ansible.com/ansible/latest/collections/community/crypto/openssl_csr_module.html#openssl-csr-module
     - name: Generate an OpenSSL Certificate Signing Request
       community.crypto.openssl_csr:
-        path: "{{ letsencrypt_csrs_dir }}/{{ domain_names[0] }}.csr"
-        privatekey_path: "{{ letsencrypt_keys_dir }}/{{ domain_names[0] }}.key"
-        common_name: "{{ domain_names[0] }}"
-        subject_alt_name: "DNS:{{ domain_names[1:] | join(',DNS:') }}"
+        path: "{{ letsencrypt_csrs_dir }}/{{ cert_cn }}.csr"
+        privatekey_path: "{{ letsencrypt_keys_dir }}/{{ cert_cn }}.key"
+        common_name: "{{ cert_cn }}"
+        subject_alt_name: "{{ cert_san }}"
 
     # Create letsencrypt challenge.
     - name: Create a cert challenge using an account key file.
@@ -161,8 +163,8 @@
         acme_version: 2
         terms_agreed: true
         account_key_src: "{{ letsencrypt_account_key }}"
-        csr: "{{ letsencrypt_csrs_dir }}/{{ domain_names[0] }}.csr"
-        dest: "{{ letsencrypt_certs_dir }}/{{ domain_names[0] }}.crt"
+        csr: "{{ letsencrypt_csrs_dir }}/{{ cert_cn }}.csr"
+        dest: "{{ letsencrypt_certs_dir }}/{{ cert_cn }}.crt"
         remaining_days: 30
       register: acme_challenge
 
@@ -188,12 +190,12 @@
     - name: Let the challenge be validated and retrieve the cert and intermediate certificate
       community.crypto.acme_certificate:
         account_key_src: "{{ letsencrypt_account_key }}"
-        csr: "{{ letsencrypt_csrs_dir }}/{{ domain_names[0] }}.csr"
-        cert: "{{ letsencrypt_certs_dir }}/{{ domain_names[0] }}.crt"
+        csr: "{{ letsencrypt_csrs_dir }}/{{ cert_cn }}.csr"
+        cert: "{{ letsencrypt_certs_dir }}/{{ cert_cn }}.crt"
         acme_directory: "{{ acme_directory }}"
         acme_version: 2
-        fullchain: "{{ letsencrypt_certs_dir }}/{{ domain_names[0] }}-fullchain.crt"
-        chain: "{{ letsencrypt_certs_dir }}/{{ domain_names[0] }}-intermediate.crt"
+        fullchain: "{{ letsencrypt_certs_dir }}/{{ cert_cn }}-fullchain.crt"
+        chain: "{{ letsencrypt_certs_dir }}/{{ cert_cn }}-intermediate.crt"
         remaining_days: 30
         data: "{{ acme_challenge }}"
       when: acme_challenge is changed
