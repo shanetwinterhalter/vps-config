@@ -2,8 +2,6 @@
 
 ## TO-DO:
 
-- Fix secret injection (no hardcoding)
-- Add environment variable to Ansible playbook when it's run - atm it's attempting to create test certs on prod
 - Add where-to-meet and photo_studio projects
 
 ## Creating a new VPS
@@ -52,3 +50,5 @@ ssh-keygen -R ${VM_IP}
 2. Add a systemd service file in `ansible/files/systemd`
 3. Modify an existing nginx config file or add a new one at `ansible/files/nginx`
 4. Push to github
+
+Note that environment/credential changes aren't stored in Github so that change needs to be made locally and the Ansible playbook run from the remote computer to apply it. 
