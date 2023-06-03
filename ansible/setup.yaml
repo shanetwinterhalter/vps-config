@@ -204,7 +204,7 @@
       ansible.builtin.cron:
         name: "run setup playbook"
         state: present
-        job: "/srv/hosting_infrastructure/venv/bin/ansible-playbook --connection=local -u root -i /srv/hosting_infrastructure/ansible/inventory.yaml /srv/hosting_infrastructure/ansible/setup.yaml --extra-vars env={{ hosting_env }} "
+        job: "/srv/hosting_infrastructure/venv/bin/ansible-playbook --connection=local -u root -i /srv/hosting_infrastructure/ansible/inventory.yaml /srv/hosting_infrastructure/ansible/setup.yaml --extra-vars env={{ hosting_env }}"
         special_time: "weekly"
 
     # Reload nginx
