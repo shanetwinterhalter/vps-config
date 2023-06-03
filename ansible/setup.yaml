@@ -1,4 +1,4 @@
-- name: My first play
+- name: VPS configuration
   hosts: "{{ env | default('dev') }}"
   vars:
     hosting_env: "{{ env | default('dev') }}"
