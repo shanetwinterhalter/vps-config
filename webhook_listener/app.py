@@ -37,15 +37,17 @@ def run_ansible_playbook():
         # Navigate to the repository's directory
         os.chdir(f"{INSTALL_DIR}/hosting_infrastructure")
 
-        # Pull the latest changes from the GitHub repository
-        pull_process = subprocess.run([
-            "git", "fetch", "--depth", "1", "origin", "master",
-            "&&", "git", "reset", "--hard", "FETCH_HEAD"],
-            check=True, capture_output=True, text=True)
 
-        # Log the output of the git pull
-        app.logger.info(pull_process.stdout)
-        app.logger.error(pull_process.stderr)
+        # Fetch the latest shallow commit and reset to it
+        # Need to do this before running playbook to ensure we're running latest version of playbook
+        fetch_process = subprocess.run(['git', 'fetch', '--depth', '1', 'origin', 'main'], check=True, capture_output=True, text=True)
+        reset_process = subprocess.run(['git', 'reset', '--hard', 'FETCH_HEAD'], check=True, capture_output=True, text=True)
+
+        # Log the output of the git commands
+        app.logger.info(fetch_process.stdout)
+        app.logger.error(fetch_process.stderr)
+        app.logger.info(reset_process.stdout)
+        app.logger.error(reset_process.stderr)
 
         # Run the Ansible playbook
         ansible_process = subprocess.run(
