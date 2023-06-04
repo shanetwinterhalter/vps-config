@@ -39,6 +39,12 @@ To force a certificate update (e.g. if there are new domain names), add:
 -e "cert_update=true"
 ```
 
+Finally to update only a single project, you can run:
+```
+-e "install_type=project" -e "update_proj={PROJECT_NAME}"
+```
+in-place of `install_type=full`
+
 If have issue with SSL certificate ID, clear from known hosts file with
 ```
 VM_IP=161.35.22.142
