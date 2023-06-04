@@ -1,0 +1,91 @@
+---
+- name: Set variables
+  ansible.builtin.set_fact:
+    letsencrypt_account_key: "{{ letsencrypt_dir }}/account/account.key"
+    letsencrypt_keys_dir: "{{ letsencrypt_dir }}/keys"
+    letsencrypt_certs_dir: "{{ letsencrypt_dir }}/certs"
+    letsencrypt_csrs_dir: "{{ letsencrypt_dir }}/csrs"
+
+- name: "Create required directories in /etc/letsencrypt"
+  ansible.builtin.file:
+    path: "/etc/letsencrypt/{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwx,g=x,o=x
+  with_items:
+    - account
+    - certs
+    - csrs
+    - keys
+
+# https://docs.ansible.com/ansible/2.9/modules/acme_certificate_module.html#acme-certificate-module
+- name: Generate let's encrypt account key
+  community.crypto.openssl_privatekey:
+    path: "{{ letsencrypt_account_key }}"
+
+# https://docs.ansible.com/ansible/latest/collections/community/crypto/openssl_privatekey_module.html#openssl-privatekey-module
+- name: Generate let's encrypt private key with the default values (4096 bits, RSA)
+  community.crypto.openssl_privatekey:
+    path: "{{ letsencrypt_keys_dir }}/{{ cert_cn }}.key"
+
+# https://docs.ansible.com/ansible/latest/collections/community/crypto/openssl_csr_module.html#openssl-csr-module
+- name: Generate an OpenSSL Certificate Signing Request
+  community.crypto.openssl_csr:
+    path: "{{ letsencrypt_csrs_dir }}/{{ cert_cn }}.csr"
+    privatekey_path: "{{ letsencrypt_keys_dir }}/{{ cert_cn }}.key"
+    common_name: "{{ cert_cn }}"
+    subject_alt_name: "{{ cert_san }}"
+
+# Create letsencrypt challenge.
+- name: Create a cert challenge using an account key file.
+  community.crypto.acme_certificate:
+    acme_directory: "{{ acme_directory }}"
+    acme_version: 2
+    terms_agreed: true
+    account_key_src: "{{ letsencrypt_account_key }}"
+    csr: "{{ letsencrypt_csrs_dir }}/{{ cert_cn }}.csr"
+    dest: "{{ letsencrypt_certs_dir }}/{{ cert_cn }}.crt"
+    remaining_days: 30
+    force: "{{ force_cert_update }}"
+  register: acme_challenge
+
+- name: "Create required directories in /etc/letsencrypt"
+  ansible.builtin.file:
+    path: "/var/www/html/.well-known/acme-challenge/"
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+
+- name: Copy http-01 challenges
+  ansible.builtin.copy:
+    dest: /var/www/html/{{ item.value['http-01']['resource'] }}
+    content: "{{ item.value['http-01']['resource_value'] }}"
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+  loop: "{{ acme_challenge.challenge_data | dict2items }}"
+  when: acme_challenge is changed
+
+# Execute letsencrypt challenge. Will fail first time unless DNS challenge data added to domain
+- name: Let the challenge be validated and retrieve the cert and intermediate certificate
+  community.crypto.acme_certificate:
+    account_key_src: "{{ letsencrypt_account_key }}"
+    csr: "{{ letsencrypt_csrs_dir }}/{{ cert_cn }}.csr"
+    cert: "{{ letsencrypt_certs_dir }}/{{ cert_cn }}.crt"
+    acme_directory: "{{ acme_directory }}"
+    acme_version: 2
+    fullchain: "{{ letsencrypt_certs_dir }}/{{ cert_cn }}-fullchain.crt"
+    chain: "{{ letsencrypt_certs_dir }}/{{ cert_cn }}-intermediate.crt"
+    remaining_days: 30
+    data: "{{ acme_challenge }}"
+    force: "{{ force_cert_update }}"
+  when: acme_challenge is changed
+
+- name: Configure services
+  ansible.builtin.systemd:
+    state: reloaded
+    enabled: true
+    name: nginx
+  when: acme_challenge is changed

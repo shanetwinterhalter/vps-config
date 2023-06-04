@@ -1,0 +1,88 @@
+---
+- name: Install packages
+  ansible.builtin.apt:
+    pkg:
+      - nginx
+      - python3-pip
+      - python3-dev
+      - build-essential
+      - libssl-dev
+      - libffi-dev
+      - python3-setuptools
+      - python3-virtualenv
+  register: result
+  retries: 5
+  delay: 30
+  until: result.failed == false
+
+- name: Configure UFW to allow SSH
+  community.general.ufw:
+    state: enabled
+    default: allow
+    name: OpenSSH
+
+- name: Configure UFW to allow HTTP
+  community.general.ufw:
+    state: enabled
+    default: allow
+    name: 'Nginx Full'
+
+- name: Copy over SSH keys for github auth
+  ansible.builtin.copy:
+    src: ../ssh_files/
+    dest: ~/.ssh/
+    owner: root
+    group: root
+    mode: '0700'
+
+- name: Copy over environment file
+  ansible.builtin.template:
+    src: ../environment
+    dest: "{{ install_dir }}/environment"
+    owner: root
+    group: root
+    mode: '0700'
+
+# nginx configuration
+- name: Copy over Nginx files
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "/etc/nginx/sites-available/{{ item | basename }}"
+    owner: root
+    group: root
+    mode: '0755'
+  with_fileglob:
+    - ./files/nginx/*
+  register: nginx_files
+
+- name: Create symlink to make nginx server blocks available
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/{{ item | basename }}"
+    dest: "/etc/nginx/sites-enabled/{{ item | basename }}"
+    owner: root
+    group: root
+    state: link
+  with_fileglob:
+    - ./files/nginx/*
+  register: nginx_symlinks
+
+- name: Reload nginx
+  ansible.builtin.systemd:
+    state: reloaded
+    enabled: true
+    name: nginx
+  when: (nginx_files is changed) or (nginx_symlinks is changed)
+
+- name: Setup cron job to auto-run this playbook once a week (for cert rotation)
+  ansible.builtin.cron:
+    name: "run setup playbook"
+    state: present
+    job: >
+      /srv/hosting_infrastructure/venv/bin/ansible-playbook
+      --connection=local
+      -u root
+      -i /srv/hosting_infrastructure/ansible/inventory.yaml
+      --extra-vars env={{ hosting_env }}
+      --extra-vars install_type=certs
+      /srv/hosting_infrastructure/ansible/setup.yaml
+    special_time: "weekly"

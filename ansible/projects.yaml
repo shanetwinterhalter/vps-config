@@ -1,0 +1,39 @@
+---
+- name: Set variables
+  ansible.builtin.set_fact:
+    dest_path: "{{ install_dir }}/{{ project.project_name }}"
+
+- name: Clone project Github repo
+  ansible.builtin.git:
+    repo: "{{ project.git_clone_url }}"
+    dest: "{{ dest_path }}"
+    depth: 1
+    force: true
+  register: repo_update
+
+- name: Create venv & install pip packages
+  ansible.builtin.pip:
+    requirements: "{{ dest_path }}/requirements.txt"
+    virtualenv: "{{ dest_path }}/venv"
+    virtualenv_command: virtualenv
+  register: pip
+
+# Configure systemd services
+- name: Copy over Systemd files
+  ansible.builtin.template:
+    src: "files/systemd/{{ item }}"
+    dest: "/etc/systemd/system/{{ item | basename }}"
+    owner: root
+    group: root
+    mode: '0755'
+  register: symlink_files
+  loop: "{{ project.service_file }}"
+
+- name: Configure services
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: true
+    enabled: true
+    name: "{{ item | basename }}"
+  loop: "{{ project.service_file }}"
+  when: (symlink_files is changed) or (pip is changed) or (repo_update is changed)

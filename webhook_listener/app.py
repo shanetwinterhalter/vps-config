@@ -1,18 +1,11 @@
 import hmac
 import hashlib
 import subprocess
-import logging
-import sys
 import os
 import threading
 from flask import Flask, abort, request, jsonify
-from flask.logging import default_handler
 
 app = Flask(__name__)
-app.logger.removeHandler(default_handler)
-app.logger.addHandler(logging.StreamHandler(sys.stdout))
-app.logger.setLevel(logging.INFO)
-app.logger.info("Starting Github listener")
 
 GITHUB_WEBHOOK_SECRET = os.getenv('GITHUB_WEBHOOK_SECRET')
 ENVIRONMENT = os.getenv('ENVIRONMENT')
@@ -34,33 +27,40 @@ def verify_signature(payload_body, signature_header):
 
 def run_ansible_playbook():
     try:
+        post_data = request.get_json()
+
         # Navigate to the repository's directory
         os.chdir(f"{INSTALL_DIR}/hosting_infrastructure")
 
-
         # Fetch the latest shallow commit and reset to it
-        # Need to do this before running playbook to ensure we're running latest version of playbook
-        fetch_process = subprocess.run(['git', 'fetch', '--depth', '1', 'origin', 'main'], check=True, capture_output=True, text=True)
-        reset_process = subprocess.run(['git', 'reset', '--hard', 'FETCH_HEAD'], check=True, capture_output=True, text=True)
-
-        # Log the output of the git commands
-        app.logger.info(fetch_process.stdout)
-        app.logger.error(fetch_process.stderr)
-        app.logger.info(reset_process.stdout)
-        app.logger.error(reset_process.stderr)
-
-        # Run the Ansible playbook
-        ansible_process = subprocess.run(
-            ["/srv/hosting_infrastructure/venv/bin/ansible-playbook",
-             "-c=local", "-u", "root", "-i",
-             "/srv/hosting_infrastructure/ansible/inventory.yaml",
-             "/srv/hosting_infrastructure/ansible/setup.yaml",
-             "--extra-vars", f"env={ENVIRONMENT}"],
+        # Need to do this before running playbook to ensure we're
+        # running latest version of playbook
+        fetch_process = subprocess.run(
+            ['git', 'fetch', '--depth', '1', 'origin', 'main'],
+            check=True, capture_output=True, text=True)
+        reset_process = subprocess.run(
+            ['git', 'reset', '--hard', 'FETCH_HEAD'],
             check=True, capture_output=True, text=True)
 
-        # Log the output of the Ansible playbook
-        app.logger.info(ansible_process.stdout)
-        app.logger.error(ansible_process.stderr)
+        # Run the Ansible playbook
+        ansible_args = [
+            "/srv/hosting_infrastructure/venv/bin/ansible-playbook",
+            "-c=local",
+            "-u", "root",
+            "-i", "/srv/hosting_infrastructure/ansible/inventory.yaml",
+            "--extra-vars", f"env={ENVIRONMENT}"
+        ]
+
+        if post_data.repository.name == "hosting_infrastructure":
+            ansible_args += ["--extra-vars", "install_type=full"]
+        else:
+            ansible_args += ["--extra-vars",
+                             f"project_update={post_data.repository.name}"]
+
+        ansible_process = subprocess.run(
+            ansible_args,
+            check=True, capture_output=True, text=True)
+
     except subprocess.CalledProcessError as e:
         # If a CalledProcessError is raised, it means that either git
         # pull or ansible-playbook returned a non-zero exit status.

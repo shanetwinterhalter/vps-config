@@ -1,218 +1,33 @@
 - name: VPS configuration
   hosts: "{{ env | default('dev') }}"
   vars:
-    hosting_env: "{{ env | default('dev') }}"
     install_dir: /srv
-    letsencrypt_keys_dir: /etc/letsencrypt/keys
-    letsencrypt_csrs_dir: /etc/letsencrypt/csrs
-    letsencrypt_certs_dir: /etc/letsencrypt/certs
-    letsencrypt_account_key: /etc/letsencrypt/account/account.key
-    cert_cn: "{{ domain_names[0] }}"
-    cert_san: "DNS:{{ (domain_names[1:] + photo_studio_domain_names + where2meet_domain_names) | join(',DNS:') }}"
-    force_cert_update: "{{ cert_update | default('false') }}"
-    projects:
-      - hosting_infrastructure
-      - shanewinterhalter.com
-      - where-to-meet
-      - photo_studio
   tasks:
 
     - name: Print output
       ansible.builtin.debug:
         msg: "Print output"
 
-    - name: Install packages
-      ansible.builtin.apt:
-        pkg:
-          - nginx
-          - python3-pip
-          - python3-dev
-          - build-essential
-          - libssl-dev
-          - libffi-dev
-          - python3-setuptools
-          - python3-virtualenv
-      register: result
-      retries: 5
-      delay: 30
-      until: result.failed == false
+    - name: Run initial setup
+      ansible.builtin.include_tasks: init.yaml
+      vars:
+        hosting_env: "{{ env | default('dev') }}"
+      when: install_type == "full"
 
-    - name: Configure UFW to allow SSH
-      community.general.ufw:
-        state: enabled
-        default: allow
-        name: OpenSSH
-
-    - name: Configure UFW to allow HTTP
-      community.general.ufw:
-        state: enabled
-        default: allow
-        name: 'Nginx Full'
-
-    - name: Copy over SSH keys for github auth
-      ansible.builtin.copy:
-        src: ../ssh_files/
-        dest: ~/.ssh/
-        owner: root
-        group: root
-        mode: '0700'
-      when: ansible_connection != 'local'
-
-    - name: Copy over environment file
-      ansible.builtin.template:
-        src: ../environment
-        dest: "{{ install_dir }}/environment"
-        owner: root
-        group: root
-        mode: '0700'
-      when: ansible_connection != 'local'
-
-    # Project configuration
-    - name: Clone all the project Github repos
-      ansible.builtin.git:
-        repo: "git@github.com:shanetwinterhalter/{{ item }}.git"
-        dest: "{{ install_dir }}/{{ item }}"
-        depth: 1
-        force: true
-      loop: "{{ projects }}"
-
-    - name: Create venv for each project & install pip packages
-      ansible.builtin.pip:
-        requirements: "{{ install_dir }}/{{ item }}/requirements.txt"
-        virtualenv: "{{ install_dir }}/{{ item }}/venv"
-        virtualenv_command: virtualenv
-      loop: "{{ projects }}"
-
-    # Configure systemd services
-    - name: Copy over Systemd files
-      ansible.builtin.template:
-        src: "{{ item }}"
-        dest: "/etc/systemd/system/{{ item | basename }}"
-        owner: root
-        group: root
-        mode: '0755'
-      register: symlink_files
-      with_fileglob:
-        - ./files/systemd/*
-
-    - name: Configure services
-      ansible.builtin.systemd:
-        state: restarted
-        daemon_reload: true
-        enabled: true
-        name: "{{ item | basename }}"
-      with_fileglob:
-        - ./files/systemd/*
-
-    # nginx configuration
-    - name: Copy over Nginx files
-      ansible.builtin.template:
-        src: "{{ item }}"
-        dest: "/etc/nginx/sites-available/{{ item | basename }}"
-        owner: root
-        group: root
-        mode: '0755'
-      with_fileglob:
-        - ./files/nginx/*
-
-    - name: Create symlink to make nginx server blocks available
-      ansible.builtin.file:
-        src: "/etc/nginx/sites-available/{{ item | basename }}"
-        dest: "/etc/nginx/sites-enabled/{{ item | basename }}"
-        owner: root
-        group: root
-        state: link
-      with_fileglob:
-        - ./files/nginx/*
+    - name: Configure projects
+      ansible.builtin.include_tasks: projects.yaml
+      loop: "{{ (project_update is defined and project_update) | ternary(projects | selectattr('project_name', 'equalto', project_update) | list, projects) }}"
+      loop_control:
+        loop_var: project
+      when: (install_type == "full") or (install_type == "update")
 
     # Configure certificates
-    - name: "Create required directories in /etc/letsencrypt"
-      ansible.builtin.file:
-        path: "/etc/letsencrypt/{{ item }}"
-        state: directory
-        owner: root
-        group: root
-        mode: u=rwx,g=x,o=x
-      with_items:
-        - account
-        - certs
-        - csrs
-        - keys
-
-    # https://docs.ansible.com/ansible/2.9/modules/acme_certificate_module.html#acme-certificate-module
-    - name: Generate let's encrypt account key
-      community.crypto.openssl_privatekey:
-        path: "{{ letsencrypt_account_key }}"
-
-    # https://docs.ansible.com/ansible/latest/collections/community/crypto/openssl_privatekey_module.html#openssl-privatekey-module
-    - name: Generate let's encrypt private key with the default values (4096 bits, RSA)
-      community.crypto.openssl_privatekey:
-        path: "{{ letsencrypt_keys_dir }}/{{ cert_cn }}.key"
-
-    # https://docs.ansible.com/ansible/latest/collections/community/crypto/openssl_csr_module.html#openssl-csr-module
-    - name: Generate an OpenSSL Certificate Signing Request
-      community.crypto.openssl_csr:
-        path: "{{ letsencrypt_csrs_dir }}/{{ cert_cn }}.csr"
-        privatekey_path: "{{ letsencrypt_keys_dir }}/{{ cert_cn }}.key"
-        common_name: "{{ cert_cn }}"
-        subject_alt_name: "{{ cert_san }}"
-
-    # Create letsencrypt challenge.
-    - name: Create a cert challenge using an account key file.
-      community.crypto.acme_certificate:
-        acme_directory: "{{ acme_directory }}"
-        acme_version: 2
-        terms_agreed: true
-        account_key_src: "{{ letsencrypt_account_key }}"
-        csr: "{{ letsencrypt_csrs_dir }}/{{ cert_cn }}.csr"
-        dest: "{{ letsencrypt_certs_dir }}/{{ cert_cn }}.crt"
-        remaining_days: 30
-        force: "{{ force_cert_update }}"
-      register: acme_challenge
-
-    - name: "Create required directories in /etc/letsencrypt"
-      ansible.builtin.file:
-        path: "/var/www/html/.well-known/acme-challenge/"
-        state: directory
-        owner: root
-        group: root
-        mode: u=rwx,g=rx,o=rx
-
-    - name: Copy http-01 challenges
-      ansible.builtin.copy:
-        dest: /var/www/html/{{ item.value['http-01']['resource'] }}
-        content: "{{ item.value['http-01']['resource_value'] }}"
-        owner: root
-        group: root
-        mode: u=rwx,g=rx,o=rx
-      loop: "{{ acme_challenge.challenge_data | dict2items }}"
-      when: acme_challenge is changed
-
-    # Execute letsencrypt challenge. Will fail first time unless DNS challenge data added to domain
-    - name: Let the challenge be validated and retrieve the cert and intermediate certificate
-      community.crypto.acme_certificate:
-        account_key_src: "{{ letsencrypt_account_key }}"
-        csr: "{{ letsencrypt_csrs_dir }}/{{ cert_cn }}.csr"
-        cert: "{{ letsencrypt_certs_dir }}/{{ cert_cn }}.crt"
-        acme_directory: "{{ acme_directory }}"
-        acme_version: 2
-        fullchain: "{{ letsencrypt_certs_dir }}/{{ cert_cn }}-fullchain.crt"
-        chain: "{{ letsencrypt_certs_dir }}/{{ cert_cn }}-intermediate.crt"
-        remaining_days: 30
-        data: "{{ acme_challenge }}"
-        force: "{{ force_cert_update }}"
-      when: acme_challenge is changed
-
-    - name: Setup cron job to auto-run this playbook once a week (for cert rotation)
-      ansible.builtin.cron:
-        name: "run setup playbook"
-        state: present
-        job: "/srv/hosting_infrastructure/venv/bin/ansible-playbook --connection=local -u root -i /srv/hosting_infrastructure/ansible/inventory.yaml /srv/hosting_infrastructure/ansible/setup.yaml --extra-vars env={{ hosting_env }}"
-        special_time: "weekly"
-
-    # Reload nginx
-    - name: Configure services
-      ansible.builtin.systemd:
-        state: reloaded
-        enabled: true
-        name: nginx
+    - name: Configure certificates
+      ansible.builtin.include_tasks: certs.yaml
+      vars:
+        letsencrypt_dir: /etc/letsencrypt
+        cert_cn: "{{ cert_common_name }}"
+        cert_san: "DNS:{{ cert_subj_alt_names | join(',DNS:') }}"
+        acme_directory: "{{ letsencrypt_server }}"
+        force_cert_update: "{{ cert_update | default('false') }}"
+      when: (install_type == "full") or (install_type == "certs")

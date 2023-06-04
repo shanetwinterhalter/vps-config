@@ -4,27 +4,65 @@ all:
       hosts:
         164.90.185.185:
       vars:
-        acme_directory: https://acme-staging-v02.api.letsencrypt.org/directory
-        domain_names: 
-          - test.shanew.co.uk
+        letsencrypt_server: https://acme-staging-v02.api.letsencrypt.org/directory
+        cert_common_name: test.shanew.co.uk
+        cert_subj_alt_names:
           - www.test.shanew.co.uk
-        photo_studio_domain_names:
           - photo-studio.test.shanew.co.uk
           - www.photo-studio.test.shanew.co.uk
-        where2meet_domain_names:
           - where-to-meet.test.shanew.co.uk
           - www.where-to-meet.test.shanew.co.uk
+        projects:
+          hosting_infrastructure:
+            project_name: hosting_infrastructure
+            git_clone_url: git@github.com:shanetwinterhalter/hosting_infrastructure.git
+            service_file: 
+              - github_listener.service
+          shanewinterhalter.com:
+            project_name: shanewinterhalter.com
+            git_clone_url: git@github.com:shanetwinterhalter/shanewinterhalter.com.git
+            service_file: 
+              - shanew.service
+          photo_studio:
+            project_name: photo_studio
+            git_clone_url: git@github.com:shanetwinterhalter/photo_studio.git
+            service_file: 
+              - photo_studio.service
+          where-to-meet:
+            project_name: where-to-meet
+            git_clone_url: git@github.com:shanetwinterhalter/where-to-meet.git
+            service_file: 
+              - where_to_meet.service
     prod:
       hosts:
         138.68.86.82:
       vars:
-        acme_directory: https://acme-v02.api.letsencrypt.org/directory
-        domain_names: 
-          - shanew.co.uk
+        letsencrypt_server: https://acme-v02.api.letsencrypt.org/directory
+        cert_common_name: shanew.co.uk
+        cert_subj_alt_names:
           - www.shanew.co.uk
-        photo_studio_domain_names:
           - photo-studio.shanew.co.uk
           - www.photo-studio.shanew.co.uk
-        where2meet_domain_names:
           - where-to-meet.shanew.co.uk
           - www.where-to-meet.shanew.co.uk
+        projects:
+          hosting_infrastructure:
+            project_name: hosting_infrastructure
+            git_clone_url: git@github.com:shanetwinterhalter/hosting_infrastructure.git
+            service_file: 
+              - github_listener.service
+          shanewinterhalter.com:
+            project_name: shanewinterhalter.com
+            git_clone_url: git@github.com:shanetwinterhalter/shanewinterhalter.com.git
+            service_file: 
+              - shanew.service
+          photo_studio:
+            project_name: photo_studio
+            git_clone_url: git@github.com:shanetwinterhalter/photo_studio.git
+            service_file: 
+              - photo_studio.service
+          where-to-meet:
+            project_name: where-to-meet
+            git_clone_url: git@github.com:shanetwinterhalter/where-to-meet.git
+            service_file: 
+              - where_to_meet.service
