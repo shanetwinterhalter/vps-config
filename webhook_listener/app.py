@@ -31,14 +31,10 @@ def run_playbook(repo_name):
         "-c=local",
         "-u", "root",
         "-i", "/srv/hosting_infrastructure/ansible/inventory.yaml",
-        "--extra-vars", f"env={ENVIRONMENT}"
+        "--extra-vars", f"env={ENVIRONMENT}",
+        "--extra-vars", "install_type=update",
+        "--extra-vars", f"project_update={repo_name}"
     ]
-
-    if repo_name == "hosting_infrastructure":
-        ansible_args += ["--extra-vars", "install_type=full"]
-    else:
-        ansible_args += ["--extra-vars", "install_type=update",
-                         "--extra-vars", f"project_update={repo_name}"]
 
     subprocess.run(ansible_args, check=True, capture_output=True, text=True)
 
