@@ -10,8 +10,8 @@ server {
 
     listen [::]:443;
     listen 443;
-    ssl_certificate /etc/letsencrypt/certs/{{ domain_names[0] }}-fullchain.crt;
-    ssl_certificate_key /etc/letsencrypt/keys/{{ domain_names[0] }}.key;
+    ssl_certificate /etc/letsencrypt/certs/{{ cert_cn }}-fullchain.crt;
+    ssl_certificate_key /etc/letsencrypt/keys/{{ cert_cn }}.key;
 }
 server {
     server_name {{ photo_studio_domain_names | join(' ') }};

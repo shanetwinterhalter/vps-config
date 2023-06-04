@@ -43,36 +43,6 @@
     group: root
     mode: '0700'
 
-# nginx configuration
-- name: Copy over Nginx files
-  ansible.builtin.template:
-    src: "{{ item }}"
-    dest: "/etc/nginx/sites-available/{{ item | basename }}"
-    owner: root
-    group: root
-    mode: '0755'
-  with_fileglob:
-    - ./files/nginx/*
-  register: nginx_files
-
-- name: Create symlink to make nginx server blocks available
-  ansible.builtin.file:
-    src: "/etc/nginx/sites-available/{{ item | basename }}"
-    dest: "/etc/nginx/sites-enabled/{{ item | basename }}"
-    owner: root
-    group: root
-    state: link
-  with_fileglob:
-    - ./files/nginx/*
-  register: nginx_symlinks
-
-- name: Reload nginx
-  ansible.builtin.systemd:
-    state: reloaded
-    enabled: true
-    name: nginx
-  when: (nginx_files is changed) or (nginx_symlinks is changed)
-
 - name: Setup cron job to auto-run this playbook once a week (for cert rotation)
   ansible.builtin.cron:
     name: "run setup playbook"

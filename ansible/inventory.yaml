@@ -12,6 +12,9 @@ all:
           - www.photo-studio.test.shanew.co.uk
           - where-to-meet.test.shanew.co.uk
           - www.where-to-meet.test.shanew.co.uk
+        website_domains:
+          - test.shanew.co.uk
+          - www.test.shanew.co.uk
         photo_studio_domain_names:
           - photo-studio.test.shanew.co.uk
           - www.photo-studio.test.shanew.co.uk

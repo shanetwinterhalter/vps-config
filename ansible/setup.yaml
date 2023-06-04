@@ -2,6 +2,7 @@
   hosts: "{{ env | default('dev') }}"
   vars:
     install_dir: /srv
+    update_proj: "{{ project_update | default('') }}"
   tasks:
 
     - name: Print output
@@ -16,7 +17,7 @@
 
     - name: Configure projects
       ansible.builtin.include_tasks: projects.yaml
-      loop: "{{ (project_update is defined and project_update) | ternary(projects | selectattr('project_name', 'equalto', project_update) | list, projects) }}"
+      loop: "{{ (update_proj != '') | ternary(projects.values() | selectattr('project_name', 'equalto', update_proj) | list, projects.values() | list) }}"
       loop_control:
         loop_var: project
       when: (install_type == "full") or (install_type == "update")

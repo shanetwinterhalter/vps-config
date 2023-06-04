@@ -25,48 +25,48 @@ def verify_signature(payload_body, signature_header):
         abort(403, description="Request signatures didn't match!")
 
 
+def run_playbook(repo_name):
+    ansible_args = [
+        "/srv/hosting_infrastructure/venv/bin/ansible-playbook",
+        "-c=local",
+        "-u", "root",
+        "-i", "/srv/hosting_infrastructure/ansible/inventory.yaml",
+        "--extra-vars", f"env={ENVIRONMENT}"
+    ]
+
+    if repo_name == "hosting_infrastructure":
+        ansible_args += ["--extra-vars", "install_type=full"]
+    else:
+        ansible_args += ["--extra-vars", "install_type=update",
+                         "--extra-vars", f"project_update={repo_name}"]
+
+    subprocess.run(ansible_args, check=True, capture_output=True, text=True)
+
+
+def update_repository():
+    repo_dir = f"{INSTALL_DIR}/hosting_infrastructure"
+    subprocess.run(['git', 'fetch', '--depth', '1', 'origin', 'main'],
+                   check=True, capture_output=True, text=True, cwd=repo_dir)
+    subprocess.run(['git', 'reset', '--hard', 'FETCH_HEAD'],
+                   check=True, capture_output=True, text=True, cwd=repo_dir)
+
+
 def run_ansible_playbook():
     try:
         post_data = request.get_json()
+        repo_name = post_data.get('repository', {}).get('name')
+        if not repo_name:
+            app.logger.error('Invalid JSON data')
+            return
 
-        # Navigate to the repository's directory
-        os.chdir(f"{INSTALL_DIR}/hosting_infrastructure")
-
-        # Fetch the latest shallow commit and reset to it
-        # Need to do this before running playbook to ensure we're
-        # running latest version of playbook
-        fetch_process = subprocess.run(
-            ['git', 'fetch', '--depth', '1', 'origin', 'main'],
-            check=True, capture_output=True, text=True)
-        reset_process = subprocess.run(
-            ['git', 'reset', '--hard', 'FETCH_HEAD'],
-            check=True, capture_output=True, text=True)
+        # Update the repository
+        update_repository()
 
         # Run the Ansible playbook
-        ansible_args = [
-            "/srv/hosting_infrastructure/venv/bin/ansible-playbook",
-            "-c=local",
-            "-u", "root",
-            "-i", "/srv/hosting_infrastructure/ansible/inventory.yaml",
-            "--extra-vars", f"env={ENVIRONMENT}"
-        ]
+        run_playbook(repo_name)
 
-        if post_data.repository.name == "hosting_infrastructure":
-            ansible_args += ["--extra-vars", "install_type=full"]
-        else:
-            ansible_args += ["--extra-vars",
-                             f"project_update={post_data.repository.name}"]
-
-        ansible_process = subprocess.run(
-            ansible_args,
-            check=True, capture_output=True, text=True)
-
-    except subprocess.CalledProcessError as e:
-        # If a CalledProcessError is raised, it means that either git
-        # pull or ansible-playbook returned a non-zero exit status.
-        # Log the error message and return from the function.
+    except (subprocess.CalledProcessError, KeyError) as e:
         app.logger.error(f'Error: {str(e)}')
-        return
 
 
 @app.route('/github', methods=["POST"])

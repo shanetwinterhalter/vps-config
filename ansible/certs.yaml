@@ -6,6 +6,29 @@
     letsencrypt_certs_dir: "{{ letsencrypt_dir }}/certs"
     letsencrypt_csrs_dir: "{{ letsencrypt_dir }}/csrs"
 
+# nginx configuration
+- name: Copy over Nginx files
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "/etc/nginx/sites-available/{{ item | basename }}"
+    owner: root
+    group: root
+    mode: '0755'
+  with_fileglob:
+    - ./files/nginx/*
+  register: nginx_files
+
+- name: Create symlink to make nginx server blocks available
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/{{ item | basename }}"
+    dest: "/etc/nginx/sites-enabled/{{ item | basename }}"
+    owner: root
+    group: root
+    state: link
+  with_fileglob:
+    - ./files/nginx/*
+  register: nginx_symlinks
+
 - name: "Create required directories in /etc/letsencrypt"
   ansible.builtin.file:
     path: "/etc/letsencrypt/{{ item }}"
@@ -88,4 +111,4 @@
     state: reloaded
     enabled: true
     name: nginx
-  when: acme_challenge is changed
+  when: (acme_challenge is changed) or (nginx_files is changed) or (nginx_symlinks is changed)
