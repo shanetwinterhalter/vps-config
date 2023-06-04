@@ -47,16 +47,15 @@ def update_repository():
                    check=True, capture_output=True, text=True, cwd=repo_dir)
 
 
-def run_ansible_playbook():
+def run_ansible_playbook(repo_name):
     try:
-        post_data = request.get_json()
-        repo_name = post_data.get('repository', {}).get('name')
         if not repo_name:
             app.logger.error('Invalid JSON data')
             return
 
         # Update the repository
-        update_repository()
+        if repo_name == "hosting_infrastructure":
+            update_repository()
 
         # Run the Ansible playbook
         run_playbook(repo_name)
@@ -70,8 +69,12 @@ def gh_webhook_listener():
     # Verify GitHub signature
     verify_signature(request.data, request.headers.get('X-Hub-Signature-256'))
 
+    # Extract necessary data from the request
+    post_data = request.get_json()
+    repo_name = post_data.get('repository', {}).get('name')
+
     # Start ansible-playbook in a separate thread
-    threading.Thread(target=run_ansible_playbook).start()
+    threading.Thread(target=run_ansible_playbook, args=(repo_name,)).start()
 
     return jsonify(
         {'message': 'Webhook received, running process'}), 200
