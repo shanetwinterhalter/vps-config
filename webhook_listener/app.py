@@ -33,7 +33,8 @@ def run_playbook(repo_name):
         "-i", "/srv/hosting_infrastructure/ansible/inventory.yaml",
         "--extra-vars", f"env={ENVIRONMENT}",
         "--extra-vars", "install_type=update",
-        "--extra-vars", f"project_update={repo_name}"
+        "--extra-vars", f"project_update={repo_name}",
+        "/srv/hosting_infrastructure/ansible/setup.yaml"
     ]
 
     subprocess.run(ansible_args, check=True, capture_output=True, text=True)
