@@ -25,23 +25,23 @@ Then add it to the Ansible inventory file
 To run on dev:
 ```
 cd ansible
-ansible-playbook -u root -i inventory.yaml setup.yaml
+ansible-playbook -u root -i inventory.yaml setup.yaml -e "install_type=full"
 ```
 
 And to run on prod:
 ```
 cd ansible
-ansible-playbook -u root -i inventory.yaml setup.yaml --extra-vars "env=prod"
+ansible-playbook -u root -i inventory.yaml setup.yaml -e "install_type=full" -e "env=prod"
 ```
 
 To force a certificate update (e.g. if there are new domain names), add:
 ```
---extra-vars "cert_update=true"
+-e "cert_update=true"
 ```
 
 If have issue with SSL certificate ID, clear from known hosts file with
 ```
-VM_IP=64.226.112.174
+VM_IP=161.35.22.142
 ssh-keygen -R ${VM_IP}
 ```
 

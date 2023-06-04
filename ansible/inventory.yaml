@@ -2,7 +2,7 @@ all:
   children:
     dev:
       hosts:
-        164.90.185.185:
+        161.35.22.142:
       vars:
         letsencrypt_server: https://acme-staging-v02.api.letsencrypt.org/directory
         cert_common_name: test.shanew.co.uk
@@ -10,6 +10,12 @@ all:
           - www.test.shanew.co.uk
           - photo-studio.test.shanew.co.uk
           - www.photo-studio.test.shanew.co.uk
+          - where-to-meet.test.shanew.co.uk
+          - www.where-to-meet.test.shanew.co.uk
+        photo_studio_domain_names:
+          - photo-studio.test.shanew.co.uk
+          - www.photo-studio.test.shanew.co.uk
+        where2meet_domain_names:
           - where-to-meet.test.shanew.co.uk
           - www.where-to-meet.test.shanew.co.uk
         projects:
@@ -43,6 +49,15 @@ all:
           - www.shanew.co.uk
           - photo-studio.shanew.co.uk
           - www.photo-studio.shanew.co.uk
+          - where-to-meet.shanew.co.uk
+          - www.where-to-meet.shanew.co.uk
+        website_domains:
+          - shanew.co.uk
+          - www.shanew.co.uk
+        photo_studio_domain_names:
+          - photo-studio.shanew.co.uk
+          - www.photo-studio.shanew.co.uk
+        where2meet_domain_names:
           - where-to-meet.shanew.co.uk
           - www.where-to-meet.shanew.co.uk
         projects:

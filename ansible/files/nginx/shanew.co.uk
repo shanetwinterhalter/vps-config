@@ -1,5 +1,5 @@
 server {
-    server_name {{ domain_names | join(' ') }};
+    server_name {{ website_domains | join(' ') }};
 
     location /github {
         include proxy_params;
@@ -13,11 +13,11 @@ server {
 
     listen [::]:443 ssl ipv6only=on;
     listen 443 ssl;
-    ssl_certificate /etc/letsencrypt/certs/{{ domain_names[0] }}-fullchain.crt;
-    ssl_certificate_key /etc/letsencrypt/keys/{{ domain_names[0] }}.key;
+    ssl_certificate /etc/letsencrypt/certs/{{ cert_cn }}-fullchain.crt;
+    ssl_certificate_key /etc/letsencrypt/keys/{{ cert_cn }}.key;
 }
 server {
-    server_name {{ domain_names | join(' ') }};
+    server_name {{ website_domains | join(' ') }};
 
     location /.well-known/ {
         default_type "text/plain";
