@@ -1,0 +1,14 @@
+[Unit]
+Description=Gunicorn instance to serve security tool
+After=network.target
+
+[Service]
+User=root
+Group=root
+WorkingDirectory={{ install_dir }}/security_tool
+EnvironmentFile=/srv/environment
+ExecStart={{ install_dir }}/security_tool/venv/bin/gunicorn --bind 127.0.0.1:5013 app:app
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

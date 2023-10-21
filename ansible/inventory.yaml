@@ -54,6 +54,7 @@ all:
           - www.photo-studio.shanew.co.uk
           - where-to-meet.shanew.co.uk
           - www.where-to-meet.shanew.co.uk
+          - shit.shanew.co.uk
         website_domains:
           - shanew.co.uk
           - www.shanew.co.uk
@@ -63,6 +64,8 @@ all:
         where2meet_domain_names:
           - where-to-meet.shanew.co.uk
           - www.where-to-meet.shanew.co.uk
+        security_tool_domain_names:
+          - shit.shanew.co.uk
         projects:
           hosting_infrastructure:
             project_name: hosting_infrastructure
@@ -84,3 +87,8 @@ all:
             git_clone_url: git@github.com:shanetwinterhalter/where-to-meet.git
             service_file: 
               - where_to_meet.service
+          security_tool:
+            project_name: security_tool
+            git_clone_url: git@github.com:shanetwinterhalter/security_tool.git
+            service_file:
+              - security_tool.service
