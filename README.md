@@ -59,3 +59,5 @@ ssh-keygen -R ${VM_IP}
 4. Push to github
 
 Note that environment/credential changes aren't stored in Github so that change needs to be made locally and the Ansible playbook run from the remote computer to apply it. 
+
+When adding a new project, you may need to manually run the ansible playbook to regenerate the certificates and update the nginx files (basically required if changing the domains)
