@@ -41,7 +41,7 @@ To force a certificate update (e.g. if there are new domain names), add:
 
 Finally to update only a single project, you can run:
 ```
--e "install_type=project" -e "update_proj={PROJECT_NAME}"
+-e "install_type=update" -e "update_proj={PROJECT_NAME}"
 ```
 in-place of `install_type=full`
 
