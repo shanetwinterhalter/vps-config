@@ -50,22 +50,9 @@ all:
         cert_common_name: shanew.co.uk
         cert_subj_alt_names:
           - www.shanew.co.uk
-          - photo-studio.shanew.co.uk
-          - www.photo-studio.shanew.co.uk
-          - where-to-meet.shanew.co.uk
-          - www.where-to-meet.shanew.co.uk
-          - shit.shanew.co.uk
         website_domains:
           - shanew.co.uk
           - www.shanew.co.uk
-        photo_studio_domain_names:
-          - photo-studio.shanew.co.uk
-          - www.photo-studio.shanew.co.uk
-        where2meet_domain_names:
-          - where-to-meet.shanew.co.uk
-          - www.where-to-meet.shanew.co.uk
-        security_tool_domain_names:
-          - shit.shanew.co.uk
         projects:
           hosting_infrastructure:
             project_name: hosting_infrastructure
@@ -77,18 +64,3 @@ all:
             git_clone_url: git@github.com:shanetwinterhalter/shanewinterhalter.com.git
             service_file: 
               - shanew.service
-          photo_studio:
-            project_name: photo_studio
-            git_clone_url: git@github.com:shanetwinterhalter/photo_studio.git
-            service_file: 
-              - photo_studio.service
-          where-to-meet:
-            project_name: where-to-meet
-            git_clone_url: git@github.com:shanetwinterhalter/where-to-meet.git
-            service_file: 
-              - where_to_meet.service
-          security_tool:
-            project_name: security_tool
-            git_clone_url: git@github.com:shanetwinterhalter/security_tool.git
-            service_file:
-              - security_tool.service
