@@ -1,0 +1,11 @@
+- name: VPS configuration
+  hosts: "{{ VPS_ENV | default('dev') }}"
+  gather_facts: false
+  become: true
+  vars:
+    local_user: shanew
+    ansible_user: "{{ local_user }}"
+
+  roles:
+    #- role: user-setup
+    - role: vps-config

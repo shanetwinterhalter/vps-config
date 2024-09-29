@@ -1,0 +1,23 @@
+---
+- name: Gather facts to check user
+  ansible.builtin.gather_facts:
+  vars:
+    ansible_user: root
+  ignore_unreachable: true
+  register: result
+
+- name: User configuration as root
+  ansible.builtin.include_tasks: user-setup.yml
+  vars:
+    ansible_user: root
+  when: result is not ansible.builtin.unreachable
+
+- name: User configuration as local user
+  ansible.builtin.include_tasks: user-setup.yml
+  vars:
+    ansible_user: "{{ local_user }}"
+  when: result is ansible.builtin.unreachable
+
+- name: Ensure running as local user from here
+  ansible.builtin.set_fact:
+    ansible_user: "{{ local_user }}"

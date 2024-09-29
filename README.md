@@ -1,16 +1,25 @@
 # hosting_infrastructure
 
+## TODO:
+
+- Install docker (including default logging backend)
+- Nginx config (via docker? or directly installed?)
+- Certificate config (inc. auto-rotation)
+- Deploy script
+
 ## Creating a new VPS
 
 ```
-doctl compute droplet create \
-    --image ubuntu-22-10-x64 \
-    --size s-1vcpu-512mb-10gb \
-    --region fra1 \
-    --vpc-uuid 59723611-7115-43db-97a6-aefceac67b1c \
-    --enable-monitoring \
-    --ssh-keys 38435412 \
-    vps-test
+export IMAGE=ubuntu-24-04-x64
+export SIZE=s-1vcpu-1gb
+export REGION=lon1
+export SSH_KEY_ID=38435412
+doctl compute droplet create --image $IMAGE \
+                             --size $SIZE \
+                             --region $REGION \
+                             --ssh-keys $SSH_KEY_ID \
+                             --enable-monitoring \
+                             shanew-test         
 ```
 
 Get the IP after the VM is created:
