@@ -1,4 +1,4 @@
-# hosting_infrastructure
+# hosting infrastructure
 
 ## TODO:
 
@@ -6,6 +6,7 @@
 - Nginx config (via docker? or directly installed?)
 - Certificate config (inc. auto-rotation)
 - Deploy script
+- Configure docker-compose to start on boot
 
 ## Creating a new VPS
 
@@ -19,7 +20,7 @@ doctl compute droplet create --image $IMAGE \
                              --region $REGION \
                              --ssh-keys $SSH_KEY_ID \
                              --enable-monitoring \
-                             shanew-test         
+                             shanew-test
 ```
 
 Get the IP after the VM is created:

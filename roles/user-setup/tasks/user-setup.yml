@@ -38,5 +38,7 @@
   with_items:
     - { regexp: '^PermitRootLogin*', line: 'PermitRootLogin=no' }
     - { regexp: '^AllowUsers*', line: 'AllowUsers {{ local_user }}' }
+    - { regexp: '^PasswordAuthentication*', line: 'PasswordAuthentication no' }
+    - { regexp: '^PubkeyAuthentication*', line: 'PubkeyAuthentication yes' }
   notify:
     - Restart_ssh

@@ -3,7 +3,7 @@
   block:
     - name: Enable UFW
       community.general.ufw:
-        state: enabled
+        state: "enabled"
 
     - name: Allow some ports
       community.general.ufw:
@@ -11,19 +11,92 @@
         port: "{{ item.port }}"
         proto: "{{ item.protocol }}"
       with_items:
-        - { 'port': 22, 'protocol': tcp, 'rule': limit }
-        - { 'port': 443, 'protocol': tcp, 'rule': allow }
+        - { 'port': 22, 'protocol': "tcp", 'rule': "limit" }
+        - { 'port': 443, 'protocol': "tcp", 'rule': "allow" }
 
     - name: Set UFW to default deny
       community.general.ufw:
-        policy: deny
+        policy: "deny"
 
+- name: Configure unattended-upgrades
+  block:
     - name: Unattended-upgrades config
       ansible.builtin.lineinfile:
         path: "/etc/apt/apt.conf.d/50unattended-upgrades"
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
       with_items:
-        - { 'regexp': '^.*Unattended-Upgrade::Remove-Unused-Kernel-Packages*', 'line': 'Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";' }
-        - { 'regexp': '^.*Unattended-Upgrade::Remove-New-Unused-Dependencies*', 'line': 'Unattended-Upgrade::Remove-New-Unused-Dependencies "true";' }
-        - { 'regexp': '^.*Unattended-Upgrade::Automatic-Reboot*', 'line': 'Unattended-Upgrade::Automatic-Reboot "false";' }
+        - { 'regexp': '^.*Unattended-Upgrade::Remove-Unused-Kernel-Packages *', 'line': 'Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";' }
+        - { 'regexp': '^.*Unattended-Upgrade::Remove-New-Unused-Dependencies *', 'line': 'Unattended-Upgrade::Remove-New-Unused-Dependencies "true";' }
+        - { 'regexp': '^.*Unattended-Upgrade::Automatic-Reboot *', 'line': 'Unattended-Upgrade::Automatic-Reboot "false";' }
+
+    - name: Ensure unattended-upgrades runs
+      ansible.builtin.lineinfile:
+        path: "/etc/apt/apt.conf.d/20auto-upgrades"
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      with_items:
+        - { 'regexp': '^.*APT::Periodic::Update-Package-Lists*', 'line': 'APT::Periodic::Update-Package-Lists "1";' }
+        - { 'regexp': '^.*APT::Periodic::Unattended-Upgrade*', 'line': 'APT::Periodic::Unattended-Upgrade "1";' }
+
+- name: Update and install apt packages
+  block:
+    - name: Upgrade all packages
+      ansible.builtin.apt:
+        name: "*"
+        state: "latest"
+        update_cache: true
+      tags:
+        - skip_ansible_lint
+
+    - name: Install packages
+      ansible.builtin.apt:
+        autoclean: true
+        autoremove: true
+        name: "{{ item }}"
+        state: "present"
+        update_cache: true
+      with_items:
+        - fail2ban
+
+- name: Configure fail2ban
+  block:
+    - name: Copy default configuration file
+      ansible.builtin.copy:
+        src: "/etc/fail2ban/jail.conf"
+        dest: "/etc/fail2ban/jail.local"
+        remote_src: true
+        mode: '0644'
+        owner: 'root'
+        group: 'root'
+
+    - name: Start and enable fail2ban service
+      ansible.builtin.service:
+        enabled: true
+        name: "fail2ban"
+        state: "started"
+
+- name: Configure sysctl settings
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    reload: true
+    state: 'present'
+    sysctl_set: true
+  with_items:
+    - { 'name': 'net.ipv4.tcp_keepalive_time', 'value': 600 }
+    - { 'name': 'net.ipv4.tcp_keepalive_intvl', 'value': 60 }
+    - { 'name': 'net.ipv4.tcp_keepalive_probes', 'value': 5 }
+    - { 'name': 'net.ipv4.tcp_syncookies', 'value': 1 }
+    - { 'name': 'net.ipv4.tcp_max_syn_backlog', 'value': 2048 }
+    - { 'name': 'net.ipv4.tcp_synack_retries', 'value': 2 }
+    - { 'name': 'net.ipv4.tcp_fin_timeout', 'value': 15 }
+    - { 'name': 'net.ipv4.tcp_tw_reuse', 'value': 1 }
+    - { 'name': 'net.ipv4.conf.all.accept_source_route', 'value': 0 }
+    - { 'name': 'net.ipv4.conf.default.accept_source_route', 'value': 0 }
+    - { 'name': 'net.ipv4.conf.all.rp_filter', 'value': 1 }
+    - { 'name': 'net.ipv4.conf.default.rp_filter', 'value': 1 }
+    - { 'name': 'net.ipv4.icmp_echo_ignore_broadcasts', 'value': 1 }
+    - { 'name': 'net.ipv4.icmp_ignore_bogus_error_responses', 'value': 1 }
+    - { 'name': 'net.ipv4.conf.all.log_martians', 'value': 1 }
+    - { 'name': 'net.ipv4.conf.default.log_martians', 'value': 1 }
