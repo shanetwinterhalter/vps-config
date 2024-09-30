@@ -2,9 +2,10 @@
 
 ## TODO:
 
-- Install docker (including default logging backend)
 - Nginx config (via docker? or directly installed?)
 - Certificate config (inc. auto-rotation)
+
+Specific to project:
 - Deploy script
 - Configure docker-compose to start on boot
 

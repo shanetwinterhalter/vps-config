@@ -1,0 +1,9 @@
+- name: Unattended-upgrades config
+  ansible.builtin.copy:
+    dest: "/etc/apt/apt.conf.d/52custom-unattended-upgrades"
+    content: |
+      Unattended-Upgrade::Automatic-Reboot-Time "02:00";
+      Unattended-Upgrade::Automatic-Reboot "true";
+    mode: '0644'
+    owner: 'root'
+    group: 'root'

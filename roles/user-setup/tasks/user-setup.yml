@@ -3,6 +3,7 @@
     name: "{{ local_user }}"
     state: present
     groups: sudo
+    append: true
     shell: /bin/bash
     create_home: true
 
