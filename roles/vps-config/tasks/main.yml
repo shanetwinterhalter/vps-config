@@ -12,6 +12,7 @@
         proto: "{{ item.protocol }}"
       with_items:
         - { 'port': 22, 'protocol': "tcp", 'rule': "limit" }
+        - { 'port': 80, 'protocol': "tcp", 'rule': "allow" }
         - { 'port': 443, 'protocol': "tcp", 'rule': "allow" }
 
     - name: Set UFW to default deny
@@ -54,11 +55,10 @@
       ansible.builtin.apt:
         autoclean: true
         autoremove: true
-        name: "{{ item }}"
+        name:
+          - fail2ban
         state: "present"
         update_cache: true
-      with_items:
-        - fail2ban
 
 - name: Configure fail2ban
   block:

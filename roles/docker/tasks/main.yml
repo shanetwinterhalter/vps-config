@@ -1,11 +1,10 @@
 - name: Install docker pre-requisites
   ansible.builtin.apt:
-    name: "{{ item }}"
+    name:
+      - 'ca-certificates'
+      - 'curl'
     update_cache: true
     state: 'present'
-  with_items:
-    - 'ca-certificates'
-    - 'curl'
 
 - name: Create /etc/apt/keyrings directory
   ansible.builtin.file:
@@ -25,7 +24,7 @@
 
 - name: Get ansible_distribution_release if we don't have it
   ansible.builtin.gather_facts:
-  when: ansible_distribution_release is not defined 
+  when: ansible_distribution_release is not defined
 
 - name: Add docker repository into sources list
   ansible.builtin.apt_repository:
@@ -35,15 +34,14 @@
 
 - name: Install docker packages
   ansible.builtin.apt:
-    name: "{{ item }}"
+    name:
+      - 'docker-ce'
+      - 'docker-ce-cli'
+      - 'containerd.io'
+      - 'docker-buildx-plugin'
+      - 'docker-compose-plugin'
     update_cache: true
     state: 'present'
-  with_items:
-    - 'docker-ce'
-    - 'docker-ce-cli'
-    - 'containerd.io'
-    - 'docker-buildx-plugin'
-    - 'docker-compose-plugin'
 
 - name: Add local user to docker group
   ansible.builtin.user:

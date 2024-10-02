@@ -1,15 +1,15 @@
 - name: Create new user
   ansible.builtin.user:
     name: "{{ local_user }}"
-    state: present
-    groups: sudo
+    state: 'present'
+    groups: 'sudo'
     append: true
-    shell: /bin/bash
+    shell: '/bin/bash'
     create_home: true
 
 - name: Enable passwordless sudo
   ansible.builtin.copy:
-    dest: /etc/sudoers.d/100-local-users
+    dest: '/etc/sudoers.d/100-local-users'
     content: |
       {{ local_user }} ALL=(ALL) NOPASSWD:ALL
     owner: root
@@ -18,14 +18,14 @@
 
 - name: Setup SSH keys
   ansible.builtin.copy:
-    src: ./ssh_files/
+    src: './ssh_files/'
     dest: "/home/{{ local_user }}/.ssh/"
     mode: '0700'
     owner: "{{ local_user }}"
 
 - name: Configure authorized keys
   ansible.builtin.copy:
-    src: /root/.ssh/authorized_keys
+    src: '/root/.ssh/authorized_keys'
     remote_src: true
     dest: "/home/{{ local_user }}/.ssh/"
     mode: '0600'
@@ -33,7 +33,7 @@
 
 - name: Update SSHD config
   ansible.builtin.lineinfile:
-    path: /etc/ssh/sshd_config
+    path: '/etc/ssh/sshd_config'
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
   with_items:

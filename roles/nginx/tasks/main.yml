@@ -1,0 +1,151 @@
+---
+- name: Install nginx + certbot
+  ansible.builtin.apt:
+    name:
+      - nginx
+      - certbot
+      - python3-certbot-nginx
+    state: 'present'
+    update_cache: true
+
+- name: Configure nginx.conf
+  ansible.builtin.copy:
+    dest: '/etc/nginx/nginx.conf'
+    mode: '0644'
+    owner: 'root'
+    group: 'root'
+    content: |
+      user www-data;
+      worker_processes auto;
+      pid /run/nginx.pid;
+      error_log /var/log/nginx/error.log;
+      include /etc/nginx/modules-enabled/*.conf;
+
+      events {
+        worker_connections 1024;
+        # multi_accept on;
+      }
+
+      http {
+
+        ##
+        # Basic Settings
+        ##
+
+        sendfile on;
+        tcp_nopush on;
+        types_hash_max_size 2048;
+        server_tokens off;
+
+        # server_names_hash_bucket_size 64;
+        # server_name_in_redirect off;
+
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+        tcp_nodelay on;
+
+        ##
+        # SSL Settings
+        ##
+
+        ssl_protocols TLSv1.2 TLSv1.3; # Dropping SSLv3, ref: POODLE
+        ssl_prefer_server_ciphers on;
+
+        ##
+        # Logging Settings
+        ##
+
+        access_log /var/log/nginx/access.log;
+
+        ##
+        # Gzip Settings
+        ##
+
+        gzip on;
+        gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;
+        client_max_body_size 10M;
+        keepalive_timeout 65;
+
+        ##
+        # Virtual Host Configs
+        ##
+
+        include /etc/nginx/conf.d/*.conf;
+        include /etc/nginx/sites-enabled/*;
+      }
+
+- name: Remove default nginx site
+  ansible.builtin.file:
+    path: '/etc/nginx/sites-enabled/default'
+    state: 'absent'
+
+- name: Configure nginx to listen on port 443 and drop traffic on port 80
+  ansible.builtin.copy:
+    dest: '/etc/nginx/sites-available/default_ssl'
+    mode: '0644'
+    owner: 'root'
+    group: 'root'
+    content: |
+      # drop all HTTP traffic on port 80
+      server {
+          listen 80;
+          server_name {{ nginx_cert_domains | join(' ') }};
+
+          location / {
+              return 301 https://$host$request_uri; # https redirect
+          }
+      }
+
+      # listen to all traffic on port 443
+      server {
+          listen 443 ssl;
+          server_name {{ nginx_cert_domains | join(' ') }};
+
+          # ssl certificate locations
+          ssl_certificate /etc/letsencrypt/live/{{ nginx_cert_domains | first }}/fullchain.pem;
+          ssl_certificate_key /etc/letsencrypt/live/{{ nginx_cert_domains | first }}/privkey.pem;
+
+          ssl_protocols TLSv1.2 TLSv1.3;
+          ssl_prefer_server_ciphers on;
+          ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
+
+          ssl_stapling on;
+          ssl_stapling_verify on;
+          resolver 8.8.8.8 1.1.1.1 valid=300s;
+          resolver_timeout 5s;
+
+          # security headers
+          add_header X-Frame-Options "SAMEORIGIN";
+          add_header X-Content-Type-Options "nosniff";
+          add_header X-XSS-Protection "1; mode=block";
+          add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+          add_header Referrer-Policy "no-referrer-when-downgrade";
+
+          location / {
+              return 444;  # reject requests for now, you'll add reverse proxy configs later
+          }
+      }
+
+- name: Link nginx site file to sites-enabled directory
+  ansible.builtin.file:
+    path: '/etc/nginx/sites-enabled/default_ssl'
+    src: '/etc/nginx/sites-available/default_ssl'
+    state: 'link'
+
+- name: Obtain SSL certificate using certbot
+  ansible.builtin.command: |
+    certbot --nginx -d {{ nginx_cert_domains | join(",") }} --test-cert --non-interactive --agree-tos --email {{ nginx_cert_email }}
+  args:
+    creates: /etc/letsencrypt/live/your-domain.com/fullchain.pem
+
+- name: Ensure certbot.timer is enabled
+  ansible.builtin.systemd:
+    name: certbot.timer
+    enabled: true
+    state: started
+
+- name: Start and enable service
+  ansible.builtin.service:
+    name: 'nginx'
+    state: 'restarted'
+    enabled: true

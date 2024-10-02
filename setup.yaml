@@ -13,3 +13,7 @@
       when: AUTO_REBOOT is defined
     - role: docker
       when: SKIP_DOCKER_INSTALL is not defined
+    - role: nginx
+      vars:
+        nginx_cert_domains: "{{ CERT_DOMAIN.split(',') }}"
+        nginx_cert_email: "{{ CERT_EMAIL }}"
