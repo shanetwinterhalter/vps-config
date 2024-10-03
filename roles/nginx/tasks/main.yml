@@ -104,7 +104,7 @@
 
 - name: Obtain SSL certificate using certbot
   ansible.builtin.command: |
-    certbot --nginx -d {{ nginx_cert_domains | join(",") }} --test-cert --non-interactive --agree-tos --email {{ nginx_cert_email }}
+    certbot --nginx -d {{ nginx_cert_domains | join(",") }} --non-interactive --agree-tos --email {{ nginx_cert_email }}
   args:
     creates: /etc/letsencrypt/live/your-domain.com/fullchain.pem
 
