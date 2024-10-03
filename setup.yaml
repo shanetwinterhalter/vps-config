@@ -8,6 +8,8 @@
 
   roles:
     - role: user-setup
+      vars:
+        ssh_key_dir: "{{ SSH_KEY_DIR }}"
     - role: vps-config
     - role: auto-reboot
       when: AUTO_REBOOT is defined

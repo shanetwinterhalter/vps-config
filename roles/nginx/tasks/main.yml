@@ -8,7 +8,12 @@
     state: 'present'
     update_cache: true
 
-- name: Configure nginx.conf
+- name: Remove default nginx site
+  ansible.builtin.file:
+    path: '/etc/nginx/sites-enabled/default'
+    state: 'absent'
+
+- name: Setup nginx.conf
   ansible.builtin.copy:
     dest: '/etc/nginx/nginx.conf'
     mode: '0644'
@@ -74,12 +79,36 @@
         include /etc/nginx/sites-enabled/*;
       }
 
-- name: Remove default nginx site
-  ansible.builtin.file:
-    path: '/etc/nginx/sites-enabled/default'
-    state: 'absent'
+- name: Configure nginx without SSL for certificate generation
+  ansible.builtin.copy:
+    dest: '/etc/nginx/sites-available/default_ssl'
+    mode: '0644'
+    owner: 'root'
+    group: 'root'
+    content: |
+      # drop all HTTP traffic on port 80
+      server {
+          listen 80;
+          server_name {{ nginx_cert_domains | join(' ') }};
 
-- name: Configure nginx to listen on port 443 and drop traffic on port 80
+          location / {
+              return 301 https://$host$request_uri; # https redirect
+          }
+      }
+
+- name: Enable nginx config
+  ansible.builtin.file:
+    src: '/etc/nginx/sites-available/default_ssl'
+    dest: '/etc/nginx/sites-enabled/default_ssl'
+    state: 'link'
+
+- name: Obtain SSL certificate using certbot
+  ansible.builtin.command: |
+    certbot --nginx -d {{ nginx_cert_domains | join(",") }} --test-cert --non-interactive --agree-tos --email {{ nginx_cert_email }}
+  args:
+    creates: /etc/letsencrypt/live/your-domain.com/fullchain.pem
+
+- name: Replace nginx site with actual config
   ansible.builtin.copy:
     dest: '/etc/nginx/sites-available/default_ssl'
     mode: '0644'
@@ -125,18 +154,6 @@
               return 444;  # reject requests for now, you'll add reverse proxy configs later
           }
       }
-
-- name: Link nginx site file to sites-enabled directory
-  ansible.builtin.file:
-    path: '/etc/nginx/sites-enabled/default_ssl'
-    src: '/etc/nginx/sites-available/default_ssl'
-    state: 'link'
-
-- name: Obtain SSL certificate using certbot
-  ansible.builtin.command: |
-    certbot --nginx -d {{ nginx_cert_domains | join(",") }} --test-cert --non-interactive --agree-tos --email {{ nginx_cert_email }}
-  args:
-    creates: /etc/letsencrypt/live/your-domain.com/fullchain.pem
 
 - name: Ensure certbot.timer is enabled
   ansible.builtin.systemd:

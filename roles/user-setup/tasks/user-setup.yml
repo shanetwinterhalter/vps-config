@@ -18,10 +18,11 @@
 
 - name: Setup SSH keys
   ansible.builtin.copy:
-    src: './ssh_files/'
+    src: "{{ ssh_key_dir }}/"
     dest: "/home/{{ local_user }}/.ssh/"
     mode: '0700'
     owner: "{{ local_user }}"
+  when: ssh_key_dir is defined
 
 - name: Configure authorized keys
   ansible.builtin.copy:

@@ -47,6 +47,7 @@ The variables to be filled in are:
 There are also optional variables:
 - AUTO_REBOOT: Configure the VPS to automatically reboot after installing updates if required. This happens at 02:00am UTC
 - SKIP_DOCKER_INSTALL: Docker is installed by default. If this isn't required, include this variable (the value it is set to doesn't matter)
+- SSH_KEY_DIR: A path to a directory on the local machine. If specified, the contents of that directory will be uploaded to the `/home/{USERNAME}/.ssh` folder on the VPS. This is to allow you to add SSH keys to the VPS for things like pulling private github repositories
 
 
 ## Creating a Digital Ocean VPS 
