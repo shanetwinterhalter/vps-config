@@ -12,18 +12,10 @@ It includes:
 - Nginx reverse proxy install
 - SSL certificate configuration and auto-renewal
 
-## TODO:
-
-- Improve how the ssh keys are handled. think about user cloning the repo and running from scratch
-
-Specific to project:
-- Deploy script
-- Configure docker-compose to start on boot
-
 ## Pre-requisites
 
 - ansible>2.16.0
-- A VPS (instructions on creating one with Digital Ocean are below, but the provider doesn't matter). SSH key authentication to the VPS is required
+- A VPS (instructions on creating one with Digital Ocean are below, but a VPS with any provider will do). SSH key authentication to the VPS is required
 - A domain name, with a DNS A record configured to point to the IP address of the VPS
 
 ## Configuring the VPS
