@@ -71,11 +71,17 @@
         owner: 'root'
         group: 'root'
 
+    - name: Update fail2ban configuration
+      ansible.builtin.lineinfile:
+        path: "/etc/fail2ban/jail.local"
+        regexp: "^.*bantime.increment = true"
+        line: "bantime.increment = true"
+
     - name: Start and enable fail2ban service
       ansible.builtin.service:
         enabled: true
         name: "fail2ban"
-        state: "started"
+        state: "restarted"
 
 - name: Configure sysctl settings
   ansible.posix.sysctl:
