@@ -70,6 +70,16 @@
         gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;
         client_max_body_size 10M;
         keepalive_timeout 65;
+        
+        # Default catch-all server block to prevent direct IP access
+        server {
+          listen 80 default_server;
+          listen 443 ssl default_server;
+          server_name _;
+          
+          # Return 444 to immediately close the connection
+          return 444;
+        }
 
         ##
         # Virtual Host Configs
